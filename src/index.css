@@ -1,0 +1,42 @@
+/* src/index.css */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --green: #2d5a27; --green-light: #f0f7ee; --orange: #ff6600; --picnic: #00a550; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1a1a1a; }
+
+.app { display: flex; flex-direction: column; height: 100dvh; }
+.page-content { flex: 1; overflow-y: auto; }
+
+/* Bottom nav */
+.bottom-nav { display: flex; border-top: 1px solid #eee; background: #fff; flex-shrink: 0; }
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 8px 4px 10px; font-size: 11px; color: #999; text-decoration: none; gap: 3px; }
+.nav-item span:first-child { font-size: 20px; }
+.nav-item.active { color: var(--green); }
+
+/* Login */
+.login-screen { display: flex; align-items: center; justify-content: center; min-height: 100dvh; padding: 24px; }
+.login-card { background: white; border-radius: 16px; padding: 32px 24px; max-width: 360px; width: 100%; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+.login-card h1 { font-size: 24px; margin-bottom: 8px; }
+.login-card p { color: #666; margin-bottom: 24px; font-size: 14px; }
+.login-card input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 15px; margin-bottom: 12px; outline: none; }
+.login-card input:focus { border-color: var(--green); }
+.login-card button { width: 100%; padding: 13px; background: var(--green); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; }
+.login-card button:disabled { opacity: 0.5; }
+.error { color: #d32f2f; font-size: 13px; margin-bottom: 8px; }
+
+/* Topbar */
+.topbar { background: var(--green); color: white; padding: 14px 16px; font-size: 18px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; }
+.topbar-back { font-size: 22px; cursor: pointer; background: none; border: none; color: white; }
+
+/* FAB */
+.fab { position: fixed; bottom: 72px; right: 20px; width: 52px; height: 52px; border-radius: 26px; background: var(--green); color: white; font-size: 28px; border: none; cursor: pointer; box-shadow: 0 4px 12px rgba(45,90,39,0.4); display: flex; align-items: center; justify-content: center; }
+
+/* Buttons */
+.btn-primary { background: var(--green); color: white; border: none; border-radius: 10px; padding: 13px 20px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; }
+.btn-picnic { background: var(--picnic); color: white; border: none; border-radius: 10px; padding: 13px 20px; font-size: 15px; font-weight: 700; cursor: pointer; width: 100%; }
+.btn-danger { background: #d32f2f; color: white; border: none; border-radius: 8px; padding: 10px 16px; font-size: 14px; cursor: pointer; }
+
+/* Cards */
+.card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+
+/* Empty state */
+.empty-state { padding: 48px 24px; text-align: center; color: #888; }
