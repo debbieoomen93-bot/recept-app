@@ -114,21 +114,32 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .steps-list { padding-left: 20px; }
 .steps-list li { font-size: 14px; padding: 6px 0; border-bottom: 1px solid #f0f0f0; line-height: 1.5; }
 
-/* Picnic Product Picker */
+/* Ingredient autocomplete */
 .ingredient-block { margin-bottom: 10px; }
-.ingredient-block .ingredient-row { margin-bottom: 4px; }
-.picnic-link-btn { background: none; border: none; font-size: 12px; color: #aaa; cursor: pointer; padding: 2px 0; text-align: left; display: flex; align-items: center; gap: 6px; }
-.picnic-link-btn.linked { color: var(--picnic); font-weight: 500; }
-.picnic-link-change { font-size: 11px; color: #aaa; text-decoration: underline; }
+.ing-name-wrapper { flex: 2; min-width: 100px; position: relative; }
+.ing-name-wrapper .ing-name { width: 100%; }
+.ing-name.ing-linked { border-color: var(--picnic); background: #f0faf4; }
+.ing-searching-dot { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 7px; height: 7px; border-radius: 50%; background: var(--picnic); animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+.ing-linked-badge { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--picnic); margin-top: 3px; padding-left: 2px; }
+.ing-unlink-btn { background: none; border: none; color: #aaa; font-size: 14px; cursor: pointer; padding: 0 2px; line-height: 1; }
+.ing-dropdown { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: white; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); z-index: 200; overflow: hidden; max-height: 240px; overflow-y: auto; }
+.ing-dropdown-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #f5f5f5; gap: 8px; }
+.ing-dropdown-item:last-child { border-bottom: none; }
+.ing-dropdown-item:hover { background: var(--green-light); }
+.ing-dropdown-name { font-size: 13px; flex: 1; }
+.ing-dropdown-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.ing-dropdown-qty { font-size: 11px; color: #999; }
+.ing-dropdown-price { font-size: 12px; color: var(--picnic); font-weight: 600; }
+
+/* Picnic Product Picker modal (standalone) */
 .picker-modal { max-height: 85vh; }
 .picker-credentials { padding: 12px 16px; border-bottom: 1px solid #eee; background: #fafafa; }
 .picker-credentials p { font-size: 13px; color: #666; margin-bottom: 8px; }
 .picker-credentials input { width: 100%; padding: 9px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; margin-bottom: 8px; outline: none; }
-.picker-credentials input:focus { border-color: var(--picnic); }
 .picker-search-row { display: flex; gap: 8px; padding: 12px 16px; border-bottom: 1px solid #eee; }
 .picker-search-row input { flex: 1; padding: 9px 14px; border-radius: 20px; border: 1px solid #ddd; font-size: 14px; outline: none; }
-.picker-search-row input:focus { border-color: var(--picnic); }
-.picker-search-btn { background: var(--picnic); color: white; border: none; border-radius: 20px; padding: 9px 16px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.picker-search-btn { background: var(--picnic); color: white; border: none; border-radius: 20px; padding: 9px 16px; font-size: 14px; font-weight: 600; cursor: pointer; }
 .picker-search-btn:disabled { opacity: 0.5; }
 .picker-error { padding: 10px 16px; color: #d32f2f; font-size: 13px; }
 .picker-empty { padding: 24px 16px; color: #888; font-size: 14px; text-align: center; }

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { createRecipe, updateRecipe, subscribeToRecipe } from '../firebase'
 import { CATEGORIES } from '../categories'
-import PicnicProductPicker from './PicnicProductPicker'
+import IngredientNameInput from './IngredientNameInput'
 
 const UNITS = ['g', 'kg', 'ml', 'liter', 'stuks', 'el', 'tl', 'snufje', 'naar smaak']
 
@@ -20,7 +20,6 @@ export default function RecipeForm({ username }) {
   const [ingredients, setIngredients] = useState([emptyIngredient()])
   const [steps, setSteps] = useState([''])
   const [saving, setSaving] = useState(false)
-  const [picnicPickerFor, setPicnicPickerFor] = useState(null)
 
   useEffect(() => {
     if (!isEditing) return
@@ -110,11 +109,12 @@ export default function RecipeForm({ username }) {
           {ingredients.map((ing, i) => (
             <div key={i} className="ingredient-block">
               <div className="ingredient-row">
-                <input
-                  placeholder="Naam"
+                <IngredientNameInput
                   value={ing.name}
-                  onChange={e => updateIngredient(i, 'name', e.target.value)}
-                  className="ing-name"
+                  onChange={val => updateIngredient(i, 'name', val)}
+                  picnicProductId={ing.picnicProductId}
+                  picnicProductName={ing.picnicProductName}
+                  onProductSelect={(productId, productName) => setPicnicProduct(i, productId, productName)}
                 />
                 <input
                   type="number"
@@ -133,10 +133,6 @@ export default function RecipeForm({ username }) {
                   <button className="btn-remove" onClick={() => removeIngredient(i)}>×</button>
                 )}
               </div>
-              <button className={`picnic-link-btn ${ing.picnicProductId ? 'linked' : ''}`} onClick={() => setPicnicPickerFor(i)} type="button">
-                🚲 {ing.picnicProductId ? ing.picnicProductName : 'Koppel Picnic product'}
-                {ing.picnicProductId && <span className="picnic-link-change">wijzigen</span>}
-              </button>
             </div>
           ))}
           <button className="btn-add" onClick={addIngredient}>+ Ingrediënt toevoegen</button>
@@ -162,15 +158,6 @@ export default function RecipeForm({ username }) {
         </div>
       </div>
 
-      {picnicPickerFor !== null && (
-        <PicnicProductPicker
-          ingredientName={ingredients[picnicPickerFor]?.name || ''}
-          currentProductId={ingredients[picnicPickerFor]?.picnicProductId}
-          currentProductName={ingredients[picnicPickerFor]?.picnicProductName}
-          onSelect={(productId, productName) => setPicnicProduct(picnicPickerFor, productId, productName)}
-          onClose={() => setPicnicPickerFor(null)}
-        />
-      )}
     </div>
   )
 }
