@@ -65,6 +65,8 @@ export default function IngredientNameInput({ value, onChange, picnicProductId, 
     onProductSelect(null, null)
   }
 
+  const hasCredentials = Boolean(localStorage.getItem('picnic-email') && localStorage.getItem('picnic-password'))
+
   return (
     <div className="ing-name-wrapper" ref={wrapperRef}>
       <input
@@ -80,6 +82,11 @@ export default function IngredientNameInput({ value, onChange, picnicProductId, 
         <div className="ing-linked-badge">
           🚲 {picnicProductName}
           <button className="ing-unlink-btn" onClick={handleUnlink} type="button">×</button>
+        </div>
+      )}
+      {!hasCredentials && value.trim().length >= 2 && !picnicProductId && (
+        <div className="ing-no-credentials">
+          🚲 Stel Picnic in via Boodschappen om automatisch te zoeken
         </div>
       )}
       {showDropdown && (
