@@ -53,7 +53,7 @@ export default async function handler(req, res) {
     const failed = []
 
     for (const ing of ingredients) {
-      const productId = await searchProduct(authToken, ing.name)
+      const productId = ing.picnicProductId || await searchProduct(authToken, ing.name)
       if (productId) {
         try {
           await addToCart(authToken, productId)

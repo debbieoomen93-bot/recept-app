@@ -3,10 +3,11 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { createRecipe, updateRecipe, subscribeToRecipe } from '../firebase'
 import { CATEGORIES } from '../categories'
+import PicnicProductPicker from './PicnicProductPicker'
 
 const UNITS = ['g', 'kg', 'ml', 'liter', 'stuks', 'el', 'tl', 'snufje', 'naar smaak']
 
-const emptyIngredient = () => ({ name: '', amount: '', unit: 'g', category: CATEGORIES[0] })
+const emptyIngredient = () => ({ name: '', amount: '', unit: 'g', category: CATEGORIES[0], picnicProductId: null, picnicProductName: null })
 
 export default function RecipeForm({ username }) {
   const { id } = useParams()
@@ -19,6 +20,7 @@ export default function RecipeForm({ username }) {
   const [ingredients, setIngredients] = useState([emptyIngredient()])
   const [steps, setSteps] = useState([''])
   const [saving, setSaving] = useState(false)
+  const [picnicPickerFor, setPicnicPickerFor] = useState(null)
 
   useEffect(() => {
     if (!isEditing) return
@@ -26,7 +28,7 @@ export default function RecipeForm({ username }) {
       setTitle(recipe.title || '')
       setDescription(recipe.description || '')
       setPortions(recipe.portions || 4)
-      setIngredients(recipe.ingredients?.length ? recipe.ingredients : [emptyIngredient()])
+      setIngredients(recipe.ingredients?.length ? recipe.ingredients.map(i => ({ picnicProductId: null, picnicProductName: null, ...i })) : [emptyIngredient()])
       setSteps(recipe.steps?.length ? recipe.steps : [''])
     })
   }, [id, isEditing])
@@ -37,6 +39,10 @@ export default function RecipeForm({ username }) {
 
   const addIngredient = () => setIngredients(prev => [...prev, emptyIngredient()])
   const removeIngredient = (index) => setIngredients(prev => prev.filter((_, i) => i !== index))
+  const setPicnicProduct = (index, productId, productName) => {
+    setIngredients(prev => prev.map((ing, i) => i === index ? { ...ing, picnicProductId: productId, picnicProductName: productName } : ing))
+    setPicnicPickerFor(null)
+  }
 
   const updateStep = (index, value) => setSteps(prev => prev.map((s, i) => i === index ? value : s))
   const addStep = () => setSteps(prev => [...prev, ''])
@@ -102,29 +108,35 @@ export default function RecipeForm({ username }) {
         <div className="form-section">
           <h3>Ingrediënten</h3>
           {ingredients.map((ing, i) => (
-            <div key={i} className="ingredient-row">
-              <input
-                placeholder="Naam"
-                value={ing.name}
-                onChange={e => updateIngredient(i, 'name', e.target.value)}
-                className="ing-name"
-              />
-              <input
-                type="number"
-                placeholder="Hoev."
-                value={ing.amount}
-                onChange={e => updateIngredient(i, 'amount', e.target.value)}
-                className="ing-amount"
-              />
-              <select value={ing.unit} onChange={e => updateIngredient(i, 'unit', e.target.value)} className="ing-unit">
-                {UNITS.map(u => <option key={u}>{u}</option>)}
-              </select>
-              <select value={ing.category} onChange={e => updateIngredient(i, 'category', e.target.value)} className="ing-cat">
-                {CATEGORIES.map(c => <option key={c}>{c}</option>)}
-              </select>
-              {ingredients.length > 1 && (
-                <button className="btn-remove" onClick={() => removeIngredient(i)}>×</button>
-              )}
+            <div key={i} className="ingredient-block">
+              <div className="ingredient-row">
+                <input
+                  placeholder="Naam"
+                  value={ing.name}
+                  onChange={e => updateIngredient(i, 'name', e.target.value)}
+                  className="ing-name"
+                />
+                <input
+                  type="number"
+                  placeholder="Hoev."
+                  value={ing.amount}
+                  onChange={e => updateIngredient(i, 'amount', e.target.value)}
+                  className="ing-amount"
+                />
+                <select value={ing.unit} onChange={e => updateIngredient(i, 'unit', e.target.value)} className="ing-unit">
+                  {UNITS.map(u => <option key={u}>{u}</option>)}
+                </select>
+                <select value={ing.category} onChange={e => updateIngredient(i, 'category', e.target.value)} className="ing-cat">
+                  {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                </select>
+                {ingredients.length > 1 && (
+                  <button className="btn-remove" onClick={() => removeIngredient(i)}>×</button>
+                )}
+              </div>
+              <button className={`picnic-link-btn ${ing.picnicProductId ? 'linked' : ''}`} onClick={() => setPicnicPickerFor(i)} type="button">
+                🚲 {ing.picnicProductId ? ing.picnicProductName : 'Koppel Picnic product'}
+                {ing.picnicProductId && <span className="picnic-link-change">wijzigen</span>}
+              </button>
             </div>
           ))}
           <button className="btn-add" onClick={addIngredient}>+ Ingrediënt toevoegen</button>
@@ -149,6 +161,16 @@ export default function RecipeForm({ username }) {
           <button className="btn-add" onClick={addStep}>+ Stap toevoegen</button>
         </div>
       </div>
+
+      {picnicPickerFor !== null && (
+        <PicnicProductPicker
+          ingredientName={ingredients[picnicPickerFor]?.name || ''}
+          currentProductId={ingredients[picnicPickerFor]?.picnicProductId}
+          currentProductName={ingredients[picnicPickerFor]?.picnicProductName}
+          onSelect={(productId, productName) => setPicnicProduct(picnicPickerFor, productId, productName)}
+          onClose={() => setPicnicPickerFor(null)}
+        />
+      )}
     </div>
   )
 }
