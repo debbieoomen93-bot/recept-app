@@ -132,6 +132,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .ing-dropdown-qty { font-size: 11px; color: #999; }
 .ing-dropdown-price { font-size: 12px; color: var(--picnic); font-weight: 600; }
 .ing-no-credentials { font-size: 11px; color: #aaa; margin-top: 3px; padding-left: 2px; }
+.ing-cred-link { background: none; border: none; color: var(--picnic); font-size: 11px; cursor: pointer; padding: 0; text-decoration: underline; }
+.ing-cred-form { background: #f9f9f9; border: 1px solid #eee; border-radius: 10px; padding: 10px; margin-top: 4px; display: flex; flex-direction: column; gap: 6px; }
+.ing-cred-form input { padding: 8px 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; outline: none; }
+.ing-cred-form input:focus { border-color: var(--picnic); }
+.ing-cred-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.ing-cred-actions button { padding: 6px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; border: 1px solid #ddd; background: white; }
+.ing-cred-save { background: var(--picnic) !important; color: white; border-color: var(--picnic) !important; }
 
 /* Picnic Product Picker modal (standalone) */
 .picker-modal { max-height: 85vh; }

@@ -5,6 +5,9 @@ export default function IngredientNameInput({ value, onChange, picnicProductId, 
   const [products, setProducts] = useState([])
   const [searching, setSearching] = useState(false)
   const [showDropdown, setShowDropdown] = useState(false)
+  const [showCredForm, setShowCredForm] = useState(false)
+  const [credEmail, setCredEmail] = useState('')
+  const [credPassword, setCredPassword] = useState('')
   const debounceRef = useRef(null)
   const wrapperRef = useRef(null)
 
@@ -84,9 +87,25 @@ export default function IngredientNameInput({ value, onChange, picnicProductId, 
           <button className="ing-unlink-btn" onClick={handleUnlink} type="button">×</button>
         </div>
       )}
-      {!hasCredentials && value.trim().length >= 2 && !picnicProductId && (
+      {!hasCredentials && value.trim().length >= 2 && !picnicProductId && !showCredForm && (
         <div className="ing-no-credentials">
-          🚲 Stel Picnic in via Boodschappen om automatisch te zoeken
+          🚲 <button className="ing-cred-link" onClick={() => setShowCredForm(true)} type="button">Picnic instellen om te zoeken</button>
+        </div>
+      )}
+      {showCredForm && (
+        <div className="ing-cred-form">
+          <input type="email" placeholder="Picnic e-mailadres" value={credEmail} onChange={e => setCredEmail(e.target.value)} />
+          <input type="password" placeholder="Picnic wachtwoord" value={credPassword} onChange={e => setCredPassword(e.target.value)} />
+          <div className="ing-cred-actions">
+            <button type="button" onClick={() => setShowCredForm(false)}>Annuleren</button>
+            <button type="button" className="ing-cred-save" onClick={() => {
+              if (credEmail && credPassword) {
+                localStorage.setItem('picnic-email', credEmail)
+                localStorage.setItem('picnic-password', credPassword)
+                setShowCredForm(false)
+              }
+            }}>Opslaan</button>
+          </div>
         </div>
       )}
       {showDropdown && (
