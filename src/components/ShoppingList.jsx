@@ -6,7 +6,7 @@ import { aggregateIngredients } from '../shoppingList'
 import PicnicModal from './PicnicModal'
 
 export default function ShoppingList() {
-  const weekId = getWeekId()
+  const [weekId] = useState(() => getWeekId())
   const [planning, setPlanning] = useState({ days: {} })
   const [recipes, setRecipes] = useState([])
   const [checked, setChecked] = useState({})

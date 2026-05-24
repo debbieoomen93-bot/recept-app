@@ -14,8 +14,13 @@ export default function RecipeDetail() {
 
   const handleDelete = async () => {
     if (window.confirm(`Recept "${recipe.title}" verwijderen?`)) {
-      await deleteRecipe(id)
-      navigate('/recepten')
+      try {
+        await deleteRecipe(id)
+        navigate('/recepten')
+      } catch (err) {
+        console.error('Verwijderen mislukt:', err)
+        alert('Verwijderen mislukt — probeer het opnieuw')
+      }
     }
   }
 

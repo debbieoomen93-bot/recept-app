@@ -34,6 +34,7 @@ exports.generateRecipeImage = onDocumentCreated(
         parameters: helpers.toValue({ sampleCount: 1, aspectRatio: '1:1' }),
       })
 
+      if (!response.predictions?.length) throw new Error('Geen afbeelding ontvangen van Vertex AI')
       const prediction = helpers.fromValue(response.predictions[0])
       const base64Image = prediction.bytesBase64Encoded
       const imageBuffer = Buffer.from(base64Image, 'base64')

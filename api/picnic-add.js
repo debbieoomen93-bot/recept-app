@@ -27,7 +27,7 @@ async function searchProduct(authToken, searchTerm) {
 }
 
 async function addToCart(authToken, productId) {
-  await fetch(`${BASE_URL}/cart/add_product`, {
+  const res = await fetch(`${BASE_URL}/cart/add_product`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -36,6 +36,7 @@ async function addToCart(authToken, productId) {
     },
     body: JSON.stringify({ product_id: productId, count: 1 }),
   })
+  if (!res.ok) throw new Error(`Cart toevoegen mislukt: ${res.status}`)
 }
 
 export default async function handler(req, res) {
@@ -54,8 +55,12 @@ export default async function handler(req, res) {
     for (const ing of ingredients) {
       const productId = await searchProduct(authToken, ing.name)
       if (productId) {
-        await addToCart(authToken, productId)
-        added.push(ing.name)
+        try {
+          await addToCart(authToken, productId)
+          added.push(ing.name)
+        } catch {
+          failed.push(ing.name)
+        }
       } else {
         failed.push(ing.name)
       }

@@ -45,21 +45,28 @@ export default function RecipeForm({ username }) {
   const handleSave = async () => {
     if (!title.trim()) return
     setSaving(true)
-    const data = {
-      title: title.trim(),
-      description: description.trim(),
-      portions: Number(portions),
-      ingredients: ingredients.filter(i => i.name.trim()).map(i => ({
-        ...i, amount: Number(i.amount) || 0
-      })),
-      steps: steps.filter(s => s.trim()),
+    try {
+      const data = {
+        title: title.trim(),
+        description: description.trim(),
+        portions: Number(portions),
+        ingredients: ingredients.filter(i => i.name.trim()).map(i => ({
+          ...i, amount: Number(i.amount) || 0
+        })),
+        steps: steps.filter(s => s.trim()),
+      }
+      if (isEditing) {
+        await updateRecipe(id, data)
+      } else {
+        await createRecipe(data, username)
+      }
+      navigate('/recepten')
+    } catch (err) {
+      console.error('Opslaan mislukt:', err)
+      alert('Opslaan mislukt — probeer het opnieuw')
+    } finally {
+      setSaving(false)
     }
-    if (isEditing) {
-      await updateRecipe(id, data)
-    } else {
-      await createRecipe(data, username)
-    }
-    navigate('/recepten')
   }
 
   return (

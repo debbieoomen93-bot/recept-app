@@ -1,5 +1,5 @@
 // src/App.jsx
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Routes, Route, NavLink, Navigate } from 'react-router-dom'
 import Login from './components/Login'
 import RecipeList from './components/RecipeList'
@@ -8,10 +8,15 @@ import RecipeDetail from './components/RecipeDetail'
 import WeekPlanning from './components/WeekPlanning'
 import ShoppingList from './components/ShoppingList'
 import { isAuthenticated, getUsername } from './auth'
+import { signInAsGuest } from './firebase'
 
 export default function App() {
   const [authed, setAuthed] = useState(() => isAuthenticated(import.meta.env.VITE_SHARED_PASSWORD))
   const username = getUsername()
+
+  useEffect(() => {
+    if (authed) signInAsGuest()
+  }, [authed])
 
   if (!authed) {
     return <Login onLogin={() => setAuthed(true)} />

@@ -1,6 +1,7 @@
 // src/components/Login.jsx
 import { useState } from 'react'
 import { checkPassword, setAuthenticated, setUsername } from '../auth'
+import { signInAsGuest } from '../firebase'
 
 export default function Login({ onLogin }) {
   const [password, setPassword] = useState('')
@@ -8,11 +9,12 @@ export default function Login({ onLogin }) {
   const [error, setError] = useState(false)
   const correctPassword = import.meta.env.VITE_SHARED_PASSWORD
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     if (checkPassword(password, correctPassword)) {
       setAuthenticated(password)
       if (name.trim()) setUsername(name.trim())
+      await signInAsGuest()
       onLogin()
     } else {
       setError(true)

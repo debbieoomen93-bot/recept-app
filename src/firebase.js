@@ -5,6 +5,7 @@ import {
   onSnapshot, getDoc, setDoc, query, orderBy, serverTimestamp
 } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage'
+import { getAuth, signInAnonymously } from 'firebase/auth'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -18,6 +19,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig)
 export const db = getFirestore(app)
 export const storage = getStorage(app)
+const auth = getAuth(app)
+
+export function signInAsGuest() {
+  return signInAnonymously(auth)
+}
 
 // --- Recipes ---
 
