@@ -74,6 +74,30 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .step-number { width: 24px; height: 24px; background: var(--green); color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; margin-top: 10px; }
 .step-row textarea { flex: 1; padding: 10px 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; font-family: inherit; resize: none; }
 
+/* WeekPlanning */
+.day-row { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+.day-label { width: 30px; font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; flex-shrink: 0; }
+.day-recipe { flex: 1; background: var(--green-light); border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight: 500; color: var(--green); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.day-recipe.second-day { opacity: 0.65; }
+.day-empty { flex: 1; border: 1.5px dashed #ddd; border-radius: 8px; padding: 8px 12px; font-size: 13px; color: #bbb; }
+.day-badge { font-size: 11px; background: white; border-radius: 4px; padding: 2px 6px; color: var(--green); }
+
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: flex; align-items: flex-end; }
+.modal { background: white; border-radius: 20px 20px 0 0; width: 100%; max-height: 80vh; display: flex; flex-direction: column; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; font-weight: 700; font-size: 16px; border-bottom: 1px solid #eee; }
+.modal-header button { background: none; border: none; font-size: 24px; color: #999; cursor: pointer; }
+.modal-search { padding: 12px 16px; border-bottom: 1px solid #eee; }
+.modal-search input { width: 100%; padding: 9px 14px; border-radius: 20px; border: 1px solid #ddd; font-size: 14px; outline: none; }
+.modal-list { overflow-y: auto; flex: 1; }
+.modal-item { padding: 14px 20px; border-bottom: 1px solid #f5f5f5; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-size: 15px; }
+.modal-item.selected { background: var(--green-light); }
+.modal-item-clear { color: #d32f2f; }
+.modal-item-meta { font-size: 12px; color: #888; }
+.modal-footer { padding: 14px 20px; border-top: 1px solid #eee; }
+.spans-toggle { display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer; }
+.spans-toggle input { width: 18px; height: 18px; accent-color: var(--green); }
+
 /* RecipeDetail */
 .detail-image-container { position: relative; }
 .detail-image { width: 100%; height: 200px; object-fit: cover; display: block; }
