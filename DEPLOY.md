@@ -66,9 +66,23 @@ firebase deploy --only functions
 
 De `generateRecipeImage` function is nu actief. Zodra je een nieuw recept toevoegt, genereert de function automatisch een AI-afbeelding (duurt ~20-30 seconden).
 
-## Stap 6 — Firestore en Storage regels instellen
+## Stap 6 — Firebase Authentication inschakelen
 
-In Firebase Console:
+De app gebruikt anonieme Firebase-auth als beveiligingslaag voor Firestore.
+
+1. Ga naar Firebase Console → **Authentication → Sign-in method**
+2. Schakel **Anoniem** in en klik Opslaan
+
+## Stap 7 — Firestore en Storage regels deployen
+
+De regels staan al in `firestore.rules` en `storage.rules` in dit project.
+Deploy ze met:
+
+```bash
+firebase deploy --only firestore:rules,storage
+```
+
+Of handmatig via Firebase Console:
 
 **Firestore rules** (Database → Rules):
 ```
@@ -76,7 +90,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if request.auth != null;
     }
   }
 }
