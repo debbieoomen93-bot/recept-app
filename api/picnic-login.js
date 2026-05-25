@@ -30,7 +30,7 @@ export default async function handler(req, res) {
     const loginData = await loginRes.json()
 
     if (loginData.second_factor_authentication_required) {
-      await fetch(`${BASE_URL}/user/2fa/generate`, {
+      const generateRes = await fetch(`${BASE_URL}/user/2fa/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -40,6 +40,10 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({ channel: 'SMS' }),
       })
+      const generateBody = await generateRes.text()
+      if (!generateRes.ok) {
+        return res.status(500).json({ error: `SMS versturen mislukt (${generateRes.status}): ${generateBody}` })
+      }
       return res.status(200).json({ requires2FA: true, tempToken })
     }
 
