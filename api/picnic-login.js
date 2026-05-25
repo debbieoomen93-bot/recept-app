@@ -18,7 +18,7 @@ export default async function handler(req, res) {
         'x-picnic-agent': AGENT,
         'Accept-Language': 'nl_NL',
       },
-      body: JSON.stringify({ key: email, secret: passwordHash, client_id: 1 }),
+      body: JSON.stringify({ key: email, secret: passwordHash, client_id: 30100 }),
     })
 
     if (!loginRes.ok) {
