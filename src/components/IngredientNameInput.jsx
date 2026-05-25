@@ -212,6 +212,9 @@ export default function IngredientNameInput({ value, onChange, picnicProductId, 
         <div className="ing-dropdown">
           {products.map(p => (
             <div key={p.id} className="ing-dropdown-item" onMouseDown={() => handleSelect(p)}>
+              {p.imageUrl && (
+                <img src={p.imageUrl} alt="" className="ing-dropdown-img" onError={e => { e.target.style.display = 'none' }} />
+              )}
               <span className="ing-dropdown-name">{p.name}</span>
               <span className="ing-dropdown-right">
                 {p.unitQuantity && <span className="ing-dropdown-qty">{p.unitQuantity}</span>}

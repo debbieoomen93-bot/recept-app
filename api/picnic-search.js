@@ -17,6 +17,9 @@ export default async function handler(req, res) {
         ? `€${(item.price_ranges[0].price / 100).toFixed(2)}`
         : null,
       unitQuantity: item.unit_quantity || null,
+      imageUrl: item.image_id
+        ? `https://storefront-prod.nl.picnicinternational.com/static/images/${item.image_id}/small.png`
+        : null,
     }))
 
     res.status(200).json({ products })
