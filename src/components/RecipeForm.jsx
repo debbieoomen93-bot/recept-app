@@ -7,7 +7,7 @@ import IngredientNameInput from './IngredientNameInput'
 
 const UNITS = ['g', 'kg', 'ml', 'liter', 'stuks', 'el', 'tl', 'snufje', 'naar smaak']
 
-const emptyIngredient = () => ({ name: '', amount: '', unit: 'g', category: CATEGORIES[0], picnicProductId: null, picnicProductName: null })
+const emptyIngredient = () => ({ name: '', amount: 1, unit: 'stuks', category: CATEGORIES[0], picnicProductId: null, picnicProductName: null })
 
 export default function RecipeForm({ username }) {
   const { id } = useParams()
