@@ -31,17 +31,7 @@ export default async function handler(req, res) {
     )
     const data = await searchRes.json()
 
-    const products = (data || [])
-      .flatMap(section => section.items || [])
-      .slice(0, 8)
-      .map(item => ({
-        id: item.id,
-        name: item.name,
-        price: item.price != null ? `€${(item.price / 100).toFixed(2)}` : null,
-        unitQuantity: item.unit_quantity || null,
-      }))
-
-    res.status(200).json({ products })
+    return res.status(200).json({ debug: data })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
