@@ -116,6 +116,7 @@ export default function RecipeForm({ username }) {
                   picnicProductId={ing.picnicProductId}
                   picnicProductName={ing.picnicProductName}
                   onProductSelect={(productId, productName) => setPicnicProduct(i, productId, productName)}
+                  onCategoryDetect={cat => updateIngredient(i, 'category', cat)}
                 />
                 <input
                   type="number"

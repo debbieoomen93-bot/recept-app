@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 
-export default function IngredientNameInput({ value, onChange, picnicProductId, picnicProductName, onProductSelect }) {
+export default function IngredientNameInput({ value, onChange, picnicProductId, picnicProductName, onProductSelect, onCategoryDetect }) {
   const [products, setProducts] = useState([])
   const [searching, setSearching] = useState(false)
   const [showDropdown, setShowDropdown] = useState(false)
@@ -139,6 +139,7 @@ export default function IngredientNameInput({ value, onChange, picnicProductId, 
     justSelectedRef.current = true
     onChange(product.name)
     onProductSelect(product.id, product.name)
+    if (onCategoryDetect && product.category) onCategoryDetect(product.category)
     setShowDropdown(false)
     setProducts([])
   }
