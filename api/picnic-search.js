@@ -1,7 +1,7 @@
 // api/picnic-search.js
 import crypto from 'crypto'
 
-const BASE_URL = 'https://storefront-prod.nl.picnicinternational.com/api/15'
+const BASE_URL = 'https://storefront-prod.nl.picnicinternational.com/api/17'
 const AGENT = '30100;1.0;17.28.0;Samsung;Android/17.28.0;nl;01'
 
 async function picnicLogin(email, password) {
