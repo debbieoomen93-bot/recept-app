@@ -18,21 +18,12 @@ export default async function handler(req, res) {
 
     let results
     try {
-      results = await client.catalog.search(searchTerm)
+      results = await client.catalog.getSuggestions(searchTerm)
     } catch (searchErr) {
       return res.status(500).json({ error: `Search mislukt: ${searchErr.message}` })
     }
 
-    const products = (results || []).slice(0, 8).map(item => ({
-      id: item.id,
-      name: item.name,
-      price: item.price_ranges?.[0]?.price != null
-        ? `€${(item.price_ranges[0].price / 100).toFixed(2)}`
-        : null,
-      unitQuantity: item.unit_quantity || null,
-    }))
-
-    res.status(200).json({ products })
+    return res.status(200).json({ debug: results })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
