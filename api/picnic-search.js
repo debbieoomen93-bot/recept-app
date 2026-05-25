@@ -10,8 +10,18 @@ export default async function handler(req, res) {
 
   try {
     const client = new PicnicClient({ countryCode: 'NL' })
-    await client.auth.login(email, password)
-    const results = await client.catalog.search(searchTerm)
+    try {
+      await client.auth.login(email, password)
+    } catch (loginErr) {
+      return res.status(500).json({ error: `Login mislukt: ${loginErr.message}` })
+    }
+
+    let results
+    try {
+      results = await client.catalog.search(searchTerm)
+    } catch (searchErr) {
+      return res.status(500).json({ error: `Search mislukt: ${searchErr.message}` })
+    }
 
     const products = (results || []).slice(0, 8).map(item => ({
       id: item.id,
