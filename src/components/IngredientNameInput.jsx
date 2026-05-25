@@ -1,25 +1,27 @@
-// src/components/IngredientNameInput.jsx
 import { useState, useEffect, useRef } from 'react'
 
 export default function IngredientNameInput({ value, onChange, picnicProductId, picnicProductName, onProductSelect }) {
   const [products, setProducts] = useState([])
   const [searching, setSearching] = useState(false)
   const [showDropdown, setShowDropdown] = useState(false)
+  const [authToken, setAuthToken] = useState(() => localStorage.getItem('picnic-auth-token'))
   const [showCredForm, setShowCredForm] = useState(false)
+  const [show2FAForm, setShow2FAForm] = useState(false)
+  const [tempToken, setTempToken] = useState(null)
   const [credEmail, setCredEmail] = useState('')
   const [credPassword, setCredPassword] = useState('')
+  const [otpCode, setOtpCode] = useState('')
+  const [authLoading, setAuthLoading] = useState(false)
+  const [authError, setAuthError] = useState('')
   const debounceRef = useRef(null)
   const wrapperRef = useRef(null)
 
   useEffect(() => {
-    const email = localStorage.getItem('picnic-email')
-    const password = localStorage.getItem('picnic-password')
-    if (!email || !password || value.trim().length < 2) {
+    if (!authToken || value.trim().length < 2) {
       setProducts([])
       setShowDropdown(false)
       return
     }
-
     clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(async () => {
       setSearching(true)
@@ -27,9 +29,14 @@ export default function IngredientNameInput({ value, onChange, picnicProductId, 
         const res = await fetch('/api/picnic-search', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, searchTerm: value.trim() }),
+          body: JSON.stringify({ authToken, searchTerm: value.trim() }),
         })
         const data = await res.json()
+        if (res.status === 401 || data.tokenExpired) {
+          localStorage.removeItem('picnic-auth-token')
+          setAuthToken(null)
+          return
+        }
         if (res.ok && data.products?.length) {
           setProducts(data.products)
           setShowDropdown(true)
@@ -43,9 +50,8 @@ export default function IngredientNameInput({ value, onChange, picnicProductId, 
         setSearching(false)
       }
     }, 500)
-
     return () => clearTimeout(debounceRef.current)
-  }, [value])
+  }, [value, authToken])
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -56,6 +62,73 @@ export default function IngredientNameInput({ value, onChange, picnicProductId, 
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
+
+  const storeToken = (token) => {
+    localStorage.setItem('picnic-auth-token', token)
+    setAuthToken(token)
+  }
+
+  const handleLogin = async (email, password) => {
+    setAuthLoading(true)
+    setAuthError('')
+    try {
+      const res = await fetch('/api/picnic-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Login mislukt')
+
+      if (data.requires2FA) {
+        setTempToken(data.tempToken)
+        setShowCredForm(false)
+        setShow2FAForm(true)
+      } else {
+        storeToken(data.authToken)
+        setShowCredForm(false)
+      }
+    } catch (err) {
+      setAuthError(err.message)
+    } finally {
+      setAuthLoading(false)
+    }
+  }
+
+  const handleSaveCredentials = () => {
+    if (!credEmail || !credPassword) return
+    localStorage.setItem('picnic-email', credEmail)
+    localStorage.setItem('picnic-password', credPassword)
+    handleLogin(credEmail, credPassword)
+  }
+
+  const handleConnectWithSaved = () => {
+    const email = localStorage.getItem('picnic-email')
+    const password = localStorage.getItem('picnic-password')
+    handleLogin(email, password)
+  }
+
+  const handleVerify = async () => {
+    setAuthLoading(true)
+    setAuthError('')
+    try {
+      const res = await fetch('/api/picnic-verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tempToken, code: otpCode }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Verificatie mislukt')
+      storeToken(data.authToken)
+      setShow2FAForm(false)
+      setTempToken(null)
+      setOtpCode('')
+    } catch (err) {
+      setAuthError(err.message)
+    } finally {
+      setAuthLoading(false)
+    }
+  }
 
   const handleSelect = (product) => {
     onProductSelect(product.id, product.name)
@@ -69,6 +142,7 @@ export default function IngredientNameInput({ value, onChange, picnicProductId, 
   }
 
   const hasCredentials = Boolean(localStorage.getItem('picnic-email') && localStorage.getItem('picnic-password'))
+  const showHint = !authToken && value.trim().length >= 2 && !picnicProductId && !showCredForm && !show2FAForm
 
   return (
     <div className="ing-name-wrapper" ref={wrapperRef}>
@@ -81,33 +155,59 @@ export default function IngredientNameInput({ value, onChange, picnicProductId, 
         autoComplete="off"
       />
       {searching && <span className="ing-searching-dot" />}
+
       {picnicProductId && !showDropdown && (
         <div className="ing-linked-badge">
           🚲 {picnicProductName}
           <button className="ing-unlink-btn" onClick={handleUnlink} type="button">×</button>
         </div>
       )}
-      {!hasCredentials && value.trim().length >= 2 && !picnicProductId && !showCredForm && (
+
+      {showHint && (
         <div className="ing-no-credentials">
-          🚲 <button className="ing-cred-link" onClick={() => setShowCredForm(true)} type="button">Picnic instellen om te zoeken</button>
+          🚲 {authLoading
+            ? 'Verbinden met Picnic...'
+            : <button className="ing-cred-link" type="button"
+                onClick={() => hasCredentials ? handleConnectWithSaved() : setShowCredForm(true)}>
+                {hasCredentials ? 'Verbinden met Picnic' : 'Picnic instellen om te zoeken'}
+              </button>
+          }
         </div>
       )}
+
       {showCredForm && (
         <div className="ing-cred-form">
           <input type="email" placeholder="Picnic e-mailadres" value={credEmail} onChange={e => setCredEmail(e.target.value)} />
           <input type="password" placeholder="Picnic wachtwoord" value={credPassword} onChange={e => setCredPassword(e.target.value)} />
+          {authError && <p style={{ color: 'red', fontSize: '12px', margin: '4px 0' }}>{authError}</p>}
           <div className="ing-cred-actions">
-            <button type="button" onClick={() => setShowCredForm(false)}>Annuleren</button>
-            <button type="button" className="ing-cred-save" onClick={() => {
-              if (credEmail && credPassword) {
-                localStorage.setItem('picnic-email', credEmail)
-                localStorage.setItem('picnic-password', credPassword)
-                setShowCredForm(false)
-              }
-            }}>Opslaan</button>
+            <button type="button" onClick={() => { setShowCredForm(false); setAuthError('') }}>Annuleren</button>
+            <button type="button" className="ing-cred-save" onClick={handleSaveCredentials}
+              disabled={authLoading || !credEmail || !credPassword}>
+              {authLoading ? 'Bezig...' : 'Verbinden'}
+            </button>
           </div>
         </div>
       )}
+
+      {show2FAForm && (
+        <div className="ing-cred-form">
+          <p style={{ fontSize: '13px', color: '#555', margin: '0 0 8px' }}>
+            Er is een SMS-code verstuurd naar je telefoon.
+          </p>
+          <input type="text" placeholder="6-cijferige code" value={otpCode}
+            onChange={e => setOtpCode(e.target.value)} maxLength={6} inputMode="numeric" />
+          {authError && <p style={{ color: 'red', fontSize: '12px', margin: '4px 0' }}>{authError}</p>}
+          <div className="ing-cred-actions">
+            <button type="button" onClick={() => { setShow2FAForm(false); setAuthError('') }}>Annuleren</button>
+            <button type="button" className="ing-cred-save" onClick={handleVerify}
+              disabled={authLoading || otpCode.length < 4}>
+              {authLoading ? 'Bezig...' : 'Bevestigen'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {showDropdown && (
         <div className="ing-dropdown">
           {products.map(p => (
