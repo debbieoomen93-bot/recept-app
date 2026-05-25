@@ -31,7 +31,7 @@ export default async function handler(req, res) {
     )
     const data = await searchRes.json()
 
-    return res.status(200).json({ debug: data })
+    return res.status(200).json({ debug: data, authToken: authToken ? 'ontvangen' : 'NULL', searchStatus: searchRes.status })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
