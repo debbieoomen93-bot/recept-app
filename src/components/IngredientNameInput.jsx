@@ -223,7 +223,7 @@ export default function IngredientNameInput({ value, onChange, picnicProductId, 
               {p.imageUrl && (
                 <img src={p.imageUrl} alt="" className="ing-dropdown-img" onError={e => { e.target.style.display = 'none' }} />
               )}
-              <span className="ing-dropdown-name">{p.name} <em style={{fontSize:'10px',color:'#aaa'}}>({p.category})</em></span>
+              <span className="ing-dropdown-name">{p.name}</span>
               <span className="ing-dropdown-right">
                 {p.unitQuantity && <span className="ing-dropdown-qty">{p.unitQuantity}</span>}
                 {p.price && <span className="ing-dropdown-price">{p.price}</span>}

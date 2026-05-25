@@ -3,7 +3,7 @@ import PicnicClient from 'picnic-api'
 const CATEGORY_RULES = [
   ['Groente & fruit', ['appel', 'peer', 'banaan', 'tomaat', ' ui', 'knoflook', 'wortel', 'aardappel', 'sla', 'spinazie', 'broccoli', 'bloemkool', 'paprika', 'champignon', 'courgette', 'komkommer', 'citroen', 'limoen', 'avocado', 'mango', 'aardbei', 'druif', 'sinaasappel', 'groente', 'fruit', 'prei', 'venkel', 'radijs', 'asperge', 'sperzieboon', 'erwt', 'bospeen', 'bieslook', 'peterselie', 'gember']],
   ['Vlees, vis & vega', ['kip', 'rund', 'varken', 'lam', 'zalm', 'tonijn', 'garnaal', 'mossel', 'tofu', 'tempeh', 'vlees', 'gehakt', 'worst', 'bacon', 'ham', 'kalkoen', 'biefstuk', 'ossenhaas', 'shoarma', 'filet', 'haring', 'makreel', 'forel', 'inktvis', 'seitan']],
-  ['Zuivel & eieren', ['melk', 'kaas', 'yoghurt', 'room', 'boter', 'eieren', 'kwark', 'mascarpone', 'mozzarella', 'cheddar', 'parmezaan', 'feta', 'vla', 'slagroom', 'crème fraîche', 'ricotta', 'camembert', 'brie', 'gouda']],
+  ['Zuivel & eieren', ['melk', 'kaas', 'yoghurt', 'room', 'boter', 'eieren', 'kwark', 'mascarpone', 'mozzarella', 'cheddar', 'parmezaan', 'feta', 'vla', 'slagroom', 'crème fraîche', 'ricotta', 'camembert', 'brie', 'gouda', 'amandel drink', 'haver drink', 'soja drink', 'rijst drink', 'kokos drink', 'oat drink']],
   ['Pasta, rijst & granen', ['pasta', 'spaghetti', 'penne', 'rijst', 'quinoa', 'couscous', 'meel', 'havermout', 'noodle', 'lasagne', 'macaroni', 'bulgur', 'linzen', 'kikkererwt', 'tagliatelle', 'fusilli', 'orzo']],
   ['Blikken & potten', ['tomatenpuree', 'passata', 'kokosmelk', 'blik', 'conserven', 'mais', 'kidneyboon', 'witte boon', 'bruine boon']],
   ['Sauzen & kruiden', ['zout', 'peper', 'oregano', 'basilicum', 'tijm', 'rozemarijn', 'koriander', 'komijn', 'kaneel', 'curry', 'mosterd', 'azijn', 'mayonaise', 'ketchup', 'sambal', 'ketjap', 'sojasaus', 'tabasco', 'worcestershire', 'kruid', 'specerij']],
@@ -40,7 +40,6 @@ export default async function handler(req, res) {
         ? `https://storefront-prod.nl.picnicinternational.com/static/images/${item.image_id}/small.png`
         : null,
       category: detectCategory(item.name),
-      _debug: `name="${item.name}" lower="${item.name?.toLowerCase()}" hasMelk=${item.name?.toLowerCase().includes('melk')}`,
     }))
 
     res.status(200).json({ products })
