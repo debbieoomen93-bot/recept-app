@@ -15,8 +15,13 @@ export default function IngredientNameInput({ value, onChange, picnicProductId, 
   const [authError, setAuthError] = useState('')
   const debounceRef = useRef(null)
   const wrapperRef = useRef(null)
+  const justSelectedRef = useRef(false)
 
   useEffect(() => {
+    if (justSelectedRef.current) {
+      justSelectedRef.current = false
+      return
+    }
     if (!authToken || value.trim().length < 2) {
       setProducts([])
       setShowDropdown(false)
@@ -131,6 +136,8 @@ export default function IngredientNameInput({ value, onChange, picnicProductId, 
   }
 
   const handleSelect = (product) => {
+    justSelectedRef.current = true
+    onChange(product.name)
     onProductSelect(product.id, product.name)
     setShowDropdown(false)
     setProducts([])

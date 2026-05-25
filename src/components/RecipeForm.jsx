@@ -39,8 +39,9 @@ export default function RecipeForm({ username }) {
   const addIngredient = () => setIngredients(prev => [...prev, emptyIngredient()])
   const removeIngredient = (index) => setIngredients(prev => prev.filter((_, i) => i !== index))
   const setPicnicProduct = (index, productId, productName) => {
-    setIngredients(prev => prev.map((ing, i) => i === index ? { ...ing, picnicProductId: productId, picnicProductName: productName } : ing))
-    setPicnicPickerFor(null)
+    setIngredients(prev => prev.map((ing, i) => i === index
+      ? { ...ing, picnicProductId: productId, picnicProductName: productName }
+      : ing))
   }
 
   const updateStep = (index, value) => setSteps(prev => prev.map((s, i) => i === index ? value : s))
