@@ -40,6 +40,7 @@ export default async function handler(req, res) {
         ? `https://storefront-prod.nl.picnicinternational.com/static/images/${item.image_id}/small.png`
         : null,
       category: detectCategory(item.name),
+      _debug: `name="${item.name}" lower="${item.name?.toLowerCase()}" hasMelk=${item.name?.toLowerCase().includes('melk')}`,
     }))
 
     res.status(200).json({ products })
