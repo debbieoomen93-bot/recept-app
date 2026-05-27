@@ -59,6 +59,14 @@ export default function IngredientNameInput({ value, onChange, picnicProductId, 
   }, [value, authToken])
 
   useEffect(() => {
+    if (showDropdown && wrapperRef.current) {
+      setTimeout(() => {
+        wrapperRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }, 50)
+    }
+  }, [showDropdown])
+
+  useEffect(() => {
     const handleClick = (e) => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
         setShowDropdown(false)
