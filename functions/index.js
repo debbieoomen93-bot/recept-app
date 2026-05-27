@@ -3,8 +3,6 @@ const { onDocumentCreated, onDocumentUpdated } = require('firebase-functions/v2/
 const { initializeApp } = require('firebase-admin/app')
 const { getFirestore } = require('firebase-admin/firestore')
 const { getStorage } = require('firebase-admin/storage')
-const { PredictionServiceClient } = require('@google-cloud/aiplatform').v1
-const { helpers } = require('@google-cloud/aiplatform')
 
 initializeApp()
 
@@ -12,11 +10,14 @@ const PROJECT_ID = process.env.GOOGLE_CLOUD_PROJECT
 const LOCATION = 'us-central1'
 const MODEL = 'imagegeneration@006'
 
-const predictionClient = new PredictionServiceClient({
-  apiEndpoint: `${LOCATION}-aiplatform.googleapis.com`,
-})
-
 async function generateAndStoreImage(recipeId, recipe) {
+  const { PredictionServiceClient } = require('@google-cloud/aiplatform').v1
+  const { helpers } = require('@google-cloud/aiplatform')
+
+  const predictionClient = new PredictionServiceClient({
+    apiEndpoint: `${LOCATION}-aiplatform.googleapis.com`,
+  })
+
   const db = getFirestore()
   const bucket = getStorage().bucket()
   const prompt = `Food photography of ${recipe.title}, ${recipe.description || 'delicious home-cooked meal'}, appetizing, professional, natural lighting`
