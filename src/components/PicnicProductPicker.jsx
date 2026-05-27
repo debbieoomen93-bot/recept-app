@@ -83,7 +83,7 @@ export default function PicnicProductPicker({ ingredientName, currentProductId, 
               className={`modal-item ${product.id === currentProductId ? 'selected' : ''}`}
               onClick={() => onSelect(product.id, product.name)}
             >
-              <div>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="picker-product-name">{product.name}</div>
                 {product.unitQuantity && <div className="modal-item-meta">{product.unitQuantity}</div>}
               </div>

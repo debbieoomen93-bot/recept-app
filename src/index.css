@@ -129,7 +129,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .ing-dropdown-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #f5f5f5; gap: 8px; }
 .ing-dropdown-item:last-child { border-bottom: none; }
 .ing-dropdown-item:hover { background: var(--green-light); }
-.ing-dropdown-name { font-size: 13px; flex: 1; }
+.ing-dropdown-name { font-size: 13px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ing-dropdown-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .ing-dropdown-qty { font-size: 11px; color: #999; }
 .ing-dropdown-price { font-size: 12px; color: var(--picnic); font-weight: 600; }
@@ -143,6 +143,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .ing-cred-actions button { padding: 6px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; border: 1px solid #ddd; background: white; }
 .ing-cred-save { background: var(--picnic) !important; color: white; border-color: var(--picnic) !important; }
 
+/* Mobile: ingredient row stacks name on its own line */
+@media (max-width: 480px) {
+  .ing-name-wrapper { flex: none; width: 100%; }
+  .ing-unit, .ing-cat { flex: 1; min-width: 56px; }
+  .ing-dropdown { max-height: 180px; }
+}
+
 /* Picnic Product Picker modal (standalone) */
 .picker-modal { max-height: 85vh; }
 .picker-credentials { padding: 12px 16px; border-bottom: 1px solid #eee; background: #fafafa; }
@@ -155,7 +162,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .picker-error { padding: 10px 16px; color: #d32f2f; font-size: 13px; }
 .picker-empty { padding: 24px 16px; color: #888; font-size: 14px; text-align: center; }
 .picker-unlink { color: #d32f2f; }
-.picker-product-name { font-size: 14px; }
+.picker-product-name { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .picker-price { font-size: 13px; color: var(--picnic); font-weight: 600; flex-shrink: 0; }
 
 /* ShoppingList */
