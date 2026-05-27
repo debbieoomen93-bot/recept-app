@@ -40,16 +40,40 @@ function extractDirect(data) {
     })
 }
 
-// Collect every object in every array that has an id + non-trivial name
+// Collect recipe-like items from a FusionPage tree.
+// Looks in both direct fields and nested params objects.
 function extractFromPage(root) {
   const seen = new Set()
   const results = []
-  const SKIP_NAMES = new Set(['title', 'header', 'page', 'root', 'content', 'home', 'more', 'all'])
+  const SKIP_NAMES = new Set([
+    'title', 'header', 'page', 'root', 'content', 'home', 'more', 'all',
+    'recepten', 'maaltijden', 'meals', 'recipes',
+  ])
+
+  function getName(item) {
+    return item.name || item.header || item.title || item.display_name
+      || item.meal_name || item.recipe_name
+      || item.params?.name || item.params?.meal_name || item.params?.recipe_name
+      || item.params?.title || item.params?.header || null
+  }
+
+  function getId(item) {
+    return item.id || item.params?.id || item.params?.recipe_id || item.params?.meal_id || null
+  }
+
+  function getImageId(item) {
+    if (Array.isArray(item.image_ids) && item.image_ids.length > 0) return item.image_ids[0]
+    if (item.image?.image_id) return item.image.image_id
+    if (item.image_id) return item.image_id
+    if (item.params?.image_id) return item.params.image_id
+    if (Array.isArray(item.params?.image_ids)) return item.params.image_ids[0]
+    return null
+  }
 
   function isCandidate(item) {
     if (!item || typeof item !== 'object' || Array.isArray(item)) return false
-    const id = item.id
-    const name = item.name || item.header || item.title || item.display_name
+    const id = getId(item)
+    const name = getName(item)
     if (!id || typeof id !== 'string' || id.length < 4) return false
     if (!name || typeof name !== 'string' || name.length < 3) return false
     if (SKIP_NAMES.has(name.toLowerCase())) return false
@@ -60,21 +84,21 @@ function extractFromPage(root) {
     if (!node || typeof node !== 'object') return
     if (Array.isArray(node)) {
       for (const item of node) {
-        if (isCandidate(item) && !seen.has(item.id)) {
-          seen.add(item.id)
-          const imageId = Array.isArray(item.image_ids) ? item.image_ids[0]
-            : item.image?.image_id || item.image_id || null
+        const id = getId(item)
+        if (isCandidate(item) && id && !seen.has(id)) {
+          seen.add(id)
           results.push({
-            id: item.id,
-            name: item.name || item.header || item.title || item.display_name,
-            imageUrl: imgUrl(imageId),
-            subHeader: item.sub_header || item.subtitle || null,
+            id,
+            name: getName(item),
+            imageUrl: imgUrl(getImageId(item)),
+            subHeader: item.sub_header || item.subtitle || item.params?.sub_header || null,
           })
         }
         walk(item)
       }
     } else {
-      for (const val of Object.values(node)) {
+      for (const [key, val] of Object.entries(node)) {
+        if (key === 'script') continue  // skip compiled JS functions
         if (typeof val === 'object') walk(val)
       }
     }
@@ -84,10 +108,24 @@ function extractFromPage(root) {
   return results
 }
 
-function debugSample(page) {
+// Return page structure with script stripped and arrays truncated, for debugging
+function debugStructure(page) {
+  function trim(val, depth) {
+    if (depth <= 0) return '…'
+    if (!val || typeof val !== 'object') return val
+    if (Array.isArray(val)) {
+      const sample = val.slice(0, 2).map(x => trim(x, depth - 1))
+      return val.length > 2 ? [...sample, `(+${val.length - 2} meer)`] : sample
+    }
+    const out = {}
+    for (const [k, v] of Object.entries(val)) {
+      if (k === 'script') { out[k] = `{${Object.keys(v || {}).length} functies}`; continue }
+      out[k] = trim(v, depth - 1)
+    }
+    return out
+  }
   try {
-    const str = JSON.stringify(page)
-    return str.length > 1200 ? str.slice(0, 1200) + '…' : str
+    return JSON.stringify(trim(page, 4), null, 1)
   } catch { return '(niet leesbaar)' }
 }
 
@@ -125,7 +163,7 @@ export default async function handler(req, res) {
     const recipes = extractFromPage(page)
     return res.status(200).json({
       recipes,
-      _debug: recipes.length === 0 ? debugSample(page) : undefined,
+      _debug: recipes.length === 0 ? debugStructure(page) : undefined,
     })
   } catch (err) {
     const tokenExpired = /403|401|Unauthorized|Forbidden/i.test(err.message)
