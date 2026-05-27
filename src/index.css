@@ -75,7 +75,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .step-row textarea { flex: 1; padding: 10px 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; font-family: inherit; resize: none; }
 
 /* WeekPlanning */
-.day-row { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+.day-row { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.15s; }
 .day-row-today { background: var(--green-light); }
 .day-label { width: 36px; display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
 .day-short { font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; }
@@ -85,8 +85,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .day-recipe { flex: 1; background: var(--green-light); border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight: 500; color: var(--green); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .day-row-today .day-recipe { background: white; }
 .day-recipe.second-day { opacity: 0.65; }
-.day-empty { flex: 1; border: 1.5px dashed #ddd; border-radius: 8px; padding: 8px 12px; font-size: 13px; color: #bbb; }
+.day-empty { flex: 1; border: 1.5px dashed #ddd; border-radius: 8px; padding: 8px 12px; font-size: 13px; color: #bbb; transition: border-color 0.15s, color 0.15s; }
 .day-badge { font-size: 11px; background: white; border-radius: 4px; padding: 2px 6px; color: var(--green); }
+
+/* Drag and drop */
+.day-drag-handle { font-size: 20px; color: #ccc; cursor: grab; padding: 4px 6px; flex-shrink: 0; touch-action: none; line-height: 1; }
+.day-drag-handle:active { cursor: grabbing; color: #999; }
+.day-row-dragging { opacity: 0.3; }
+.day-row-drag-over { background: #e8f5e9; outline: 2px solid var(--green); outline-offset: -2px; border-radius: 0; }
+.day-row-drag-over .day-empty { border-color: var(--green); color: var(--green); }
+.drag-ghost { position: fixed; z-index: 1000; background: var(--green); color: white; border-radius: 10px; padding: 10px 16px; font-size: 14px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,0.25); pointer-events: none; transform: translate(-50%, -130%); white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis; }
 
 /* Modal */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: flex; align-items: flex-end; }
