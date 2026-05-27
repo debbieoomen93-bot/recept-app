@@ -5,6 +5,7 @@ export default function PicnicRecipes() {
   const [recipes, setRecipes] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [debugInfo, setDebugInfo] = useState(null)
   const navigate = useNavigate()
 
   const authToken = localStorage.getItem('picnic-auth-token')
@@ -23,6 +24,7 @@ export default function PicnicRecipes() {
         if (data.tokenExpired) localStorage.removeItem('picnic-auth-token')
         if (data.error) throw new Error(data.error)
         setRecipes(data.recipes || [])
+        if (data._debug) { console.warn('[PicnicRecipes] debug:', data._debug); setDebugInfo(data._debug) }
       })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false))
@@ -49,7 +51,15 @@ export default function PicnicRecipes() {
           <div style={{ marginBottom: 8 }}>⚠️ {error}</div>
         </div>
       ) : recipes.length === 0 ? (
-        <div className="empty-state">Geen recepten gevonden</div>
+        <div className="empty-state">
+          <div>Geen recepten gevonden</div>
+          {debugInfo && (
+            <details style={{ marginTop: 12, fontSize: 11, textAlign: 'left', maxWidth: 320 }}>
+              <summary style={{ cursor: 'pointer', color: '#888' }}>Debug info</summary>
+              <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all', color: '#555', marginTop: 8 }}>{debugInfo}</pre>
+            </details>
+          )}
+        </div>
       ) : (
         <div className="picnic-recipe-grid">
           {recipes.map(recipe => (
