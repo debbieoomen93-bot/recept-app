@@ -36,7 +36,7 @@ async function generateAndStoreImage(recipeId, recipe) {
 }
 
 exports.generateRecipeImage = onDocumentCreated(
-  { document: 'recipes/{recipeId}', region: 'europe-west4', timeoutSeconds: 120 },
+  { document: 'recipes/{recipeId}', region: 'europe-west4', timeoutSeconds: 120, memory: '512MiB' },
   async (event) => {
     const recipeId = event.params.recipeId
     try {
@@ -49,7 +49,7 @@ exports.generateRecipeImage = onDocumentCreated(
 )
 
 exports.regenerateRecipeImage = onDocumentUpdated(
-  { document: 'recipes/{recipeId}', region: 'europe-west4', timeoutSeconds: 120 },
+  { document: 'recipes/{recipeId}', region: 'europe-west4', timeoutSeconds: 120, memory: '512MiB' },
   async (event) => {
     const before = event.data.before.data()
     const after = event.data.after.data()
