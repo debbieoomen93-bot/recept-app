@@ -53,7 +53,8 @@ exports.regenerateRecipeImage = onDocumentUpdated(
   async (event) => {
     const before = event.data.before.data()
     const after = event.data.after.data()
-    if (before.imageStatus === 'pending' || after.imageStatus !== 'pending') return
+    const regenerateChanged = after.regenerateAt?.seconds !== before.regenerateAt?.seconds
+    if (!regenerateChanged) return
     const recipeId = event.params.recipeId
     try {
       await generateAndStoreImage(recipeId, after)

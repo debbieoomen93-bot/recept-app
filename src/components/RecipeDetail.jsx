@@ -42,15 +42,13 @@ export default function RecipeDetail() {
                 <p>AI-afbeelding wordt gegenereerd...</p>
               </div>
         }
-        {(recipe.imageStatus === 'done' || recipe.imageStatus === 'error') && (
-          <button
-            className="ai-badge"
-            style={{ cursor: 'pointer', background: 'none', border: 'none' }}
-            onClick={() => regenerateRecipeImage(recipe.id)}
-          >
-            {recipe.imageStatus === 'done' ? '✨ Opnieuw genereren' : '🔄 Opnieuw proberen'}
-          </button>
-        )}
+        <button
+          className="ai-badge"
+          style={{ cursor: 'pointer', background: 'none', border: 'none' }}
+          onClick={() => regenerateRecipeImage(recipe.id)}
+        >
+          {recipe.imageStatus === 'done' ? '✨ Opnieuw genereren' : '🔄 Opnieuw proberen'}
+        </button>
       </div>
 
       <div className="detail-body">

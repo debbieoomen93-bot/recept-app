@@ -59,7 +59,7 @@ export async function deleteRecipe(id) {
 }
 
 export async function regenerateRecipeImage(id) {
-  await updateDoc(doc(db, 'recipes', id), { imageUrl: null, imageStatus: 'pending' })
+  await updateDoc(doc(db, 'recipes', id), { imageUrl: null, imageStatus: 'pending', regenerateAt: serverTimestamp() })
 }
 
 export function subscribeToRecipe(id, callback) {
