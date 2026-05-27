@@ -7,8 +7,21 @@ export default function RecipeDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [recipe, setRecipe] = useState(null)
+  const [regenerating, setRegenerating] = useState(false)
 
   useEffect(() => subscribeToRecipe(id, setRecipe), [id])
+
+  const handleRegenerate = async () => {
+    setRegenerating(true)
+    try {
+      await regenerateRecipeImage(recipe.id)
+    } catch (err) {
+      console.error('Regenereren mislukt:', err)
+      alert('Opnieuw genereren mislukt — probeer het nogmaals')
+    } finally {
+      setRegenerating(false)
+    }
+  }
 
   if (!recipe) return <div className="empty-state"><p>Laden...</p></div>
 
@@ -43,11 +56,11 @@ export default function RecipeDetail() {
               </div>
         }
         <button
-          className="ai-badge"
-          style={{ cursor: 'pointer', background: 'none', border: 'none' }}
-          onClick={() => regenerateRecipeImage(recipe.id)}
+          className="ai-badge ai-badge-btn"
+          onClick={handleRegenerate}
+          disabled={regenerating || recipe.imageStatus === 'pending'}
         >
-          {recipe.imageStatus === 'done' ? '✨ Opnieuw genereren' : '🔄 Opnieuw proberen'}
+          {regenerating || recipe.imageStatus === 'pending' ? '⏳ Bezig...' : recipe.imageStatus === 'done' ? '✨ Opnieuw genereren' : '🔄 Opnieuw proberen'}
         </button>
       </div>
 
