@@ -58,6 +58,10 @@ export async function deleteRecipe(id) {
   await deleteDoc(doc(db, 'recipes', id))
 }
 
+export async function regenerateRecipeImage(id) {
+  await updateDoc(doc(db, 'recipes', id), { imageUrl: null, imageStatus: 'pending' })
+}
+
 export function subscribeToRecipe(id, callback) {
   return onSnapshot(doc(db, 'recipes', id), snap => {
     if (snap.exists()) callback({ id: snap.id, ...snap.data() })

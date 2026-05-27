@@ -1,7 +1,7 @@
 // src/components/RecipeDetail.jsx
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { subscribeToRecipe, deleteRecipe } from '../firebase'
+import { subscribeToRecipe, deleteRecipe, regenerateRecipeImage } from '../firebase'
 
 export default function RecipeDetail() {
   const { id } = useParams()
@@ -42,8 +42,14 @@ export default function RecipeDetail() {
                 <p>AI-afbeelding wordt gegenereerd...</p>
               </div>
         }
-        {recipe.imageStatus === 'done' && (
-          <span className="ai-badge">✨ AI gegenereerd</span>
+        {(recipe.imageStatus === 'done' || recipe.imageStatus === 'error') && (
+          <button
+            className="ai-badge"
+            style={{ cursor: 'pointer', background: 'none', border: 'none' }}
+            onClick={() => regenerateRecipeImage(recipe.id)}
+          >
+            {recipe.imageStatus === 'done' ? '✨ Opnieuw genereren' : '🔄 Opnieuw proberen'}
+          </button>
         )}
       </div>
 
