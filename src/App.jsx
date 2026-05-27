@@ -48,16 +48,16 @@ export default function App() {
       </div>
       <nav className="bottom-nav">
         <NavLink to="/recepten" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-          <span>📋</span><span>Recepten</span>
+          <span>📋</span><span>Jouw recepten</span>
+        </NavLink>
+        <NavLink to="/picnic" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+          <span>🚲</span><span>Picnic recepten</span>
         </NavLink>
         <NavLink to="/planning" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
           <span>📅</span><span>Planning</span>
         </NavLink>
         <NavLink to="/boodschappen" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
           <span>🛒</span><span>Boodschappen</span>
-        </NavLink>
-        <NavLink to="/picnic" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-          <span>🚲</span><span>Picnic</span>
         </NavLink>
       </nav>
     </div>
