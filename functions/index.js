@@ -19,7 +19,7 @@ async function generateAndStoreImage(recipeId, recipe) {
   })
 
   const db = getFirestore()
-  const bucket = getStorage().bucket()
+  const bucket = getStorage().bucket('recept-app-240724.firebasestorage.app')
   const prompt = `Food photography of ${recipe.title}, ${recipe.description || 'delicious home-cooked meal'}, appetizing, professional, natural lighting`
   const endpoint = `projects/${PROJECT_ID}/locations/${LOCATION}/publishers/google/models/${MODEL}`
   const [response] = await predictionClient.predict({
