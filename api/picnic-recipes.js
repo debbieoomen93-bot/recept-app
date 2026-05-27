@@ -108,14 +108,16 @@ function extractFromPage(root) {
   return results
 }
 
-// Return page structure with script stripped and arrays truncated, for debugging
+// Return page structure with script stripped, focused on the body tree
 function debugStructure(page) {
   function trim(val, depth) {
     if (depth <= 0) return '…'
-    if (!val || typeof val !== 'object') return val
+    if (val === null || val === undefined) return val
+    if (typeof val === 'string') return val.length > 60 ? val.slice(0, 60) + '…' : val
+    if (typeof val !== 'object') return val
     if (Array.isArray(val)) {
-      const sample = val.slice(0, 2).map(x => trim(x, depth - 1))
-      return val.length > 2 ? [...sample, `(+${val.length - 2} meer)`] : sample
+      const sample = val.slice(0, 3).map(x => trim(x, depth - 1))
+      return val.length > 3 ? [...sample, `(+${val.length - 3} meer)`] : sample
     }
     const out = {}
     for (const [k, v] of Object.entries(val)) {
@@ -125,7 +127,10 @@ function debugStructure(page) {
     return out
   }
   try {
-    return JSON.stringify(trim(page, 4), null, 1)
+    // Focus on layout.body where recipe components live; fall back to full page
+    const focus = page?.layout?.body ?? page?.layout ?? page
+    const str = JSON.stringify(trim(focus, 9), null, 1)
+    return str.length > 4000 ? str.slice(0, 4000) + '…' : str
   } catch { return '(niet leesbaar)' }
 }
 
