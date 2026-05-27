@@ -4,7 +4,7 @@ const { initializeApp } = require('firebase-admin/app')
 const { getFirestore } = require('firebase-admin/firestore')
 const { getStorage } = require('firebase-admin/storage')
 
-const app = initializeApp()
+const app = initializeApp({ storageBucket: 'recept-app-240724.firebasestorage.app' })
 
 const PROJECT_ID = process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT || app.options.projectId
 const LOCATION = 'us-central1'
@@ -19,7 +19,7 @@ async function generateAndStoreImage(recipeId, recipe) {
   })
 
   const db = getFirestore()
-  const bucket = getStorage().bucket('recept-app-240724.firebasestorage.app')
+  const bucket = getStorage(app).bucket()
   const prompt = `Food photography of ${recipe.title}, ${recipe.description || 'delicious home-cooked meal'}, appetizing, professional, natural lighting`
   const endpoint = `projects/${PROJECT_ID}/locations/${LOCATION}/publishers/google/models/${MODEL}`
   const [response] = await predictionClient.predict({
