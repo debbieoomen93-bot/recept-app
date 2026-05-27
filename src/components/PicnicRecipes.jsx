@@ -86,7 +86,7 @@ export default function RecipeSearch() {
         ) : searched && recipes.length === 0 ? (
           <div className="empty-state">
             <div style={{ marginBottom: 12 }}>Geen recepten gevonden voor "{searchTerm}"</div>
-            <button type="button" className="btn-ai-generate" onClick={() => navigate('/picnic/ai')} style={{ display: 'inline-block', width: 'auto', padding: '10px 20px' }}>
+            <button type="button" className="btn-ai-generate" onClick={() => navigate('/picnic/ai', { state: { dishName: searchTerm } })} style={{ display: 'inline-block', width: 'auto', padding: '10px 20px' }}>
               ✨ Laat AI dit recept maken
             </button>
           </div>

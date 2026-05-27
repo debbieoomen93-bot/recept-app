@@ -59,6 +59,7 @@ export default function App() {
           <Route path="/picnic" element={<PicnicRecipes />} />
           <Route path="/picnic/ai" element={<AIRecipe username={username} />} />
           <Route path="/picnic/db/:mealId" element={<PicnicRecipeDetail username={username} />} />
+          <Route path="*" element={<Navigate to="/recepten" replace />} />
         </Routes>
       </div>
       <nav className="bottom-nav">

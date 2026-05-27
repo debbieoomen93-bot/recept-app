@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { createRecipe } from '../firebase'
 
 export default function AIRecipe({ username }) {
-  const [dishName, setDishName] = useState('')
+  const location = useLocation()
+  const [dishName, setDishName] = useState(location.state?.dishName || '')
   const [recipe, setRecipe] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
