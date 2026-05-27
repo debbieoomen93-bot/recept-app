@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { createRecipe } from '../firebase'
 
-export default function PicnicRecipeDetail({ username }) {
-  const { recipeId } = useParams()
+export default function TheMealDBDetail({ username }) {
+  const { mealId } = useParams()
   const [recipe, setRecipe] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -11,25 +11,21 @@ export default function PicnicRecipeDetail({ username }) {
   const [imported, setImported] = useState(false)
   const navigate = useNavigate()
 
-  const authToken = localStorage.getItem('picnic-auth-token')
-
   useEffect(() => {
-    if (!authToken) { setLoading(false); return }
     setLoading(true)
-    fetch('/api/picnic-recipe-detail', {
+    fetch('/api/themealdb-detail', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ authToken, recipeId: decodeURIComponent(recipeId) }),
+      body: JSON.stringify({ mealId }),
     })
       .then(r => r.json())
       .then(data => {
-        if (data.tokenExpired) localStorage.removeItem('picnic-auth-token')
         if (data.error) throw new Error(data.error)
         setRecipe(data.recipe)
       })
       .catch(e => setError(e.message))
       .finally(() => setLoading(false))
-  }, [recipeId, authToken])
+  }, [mealId])
 
   const handleImport = async () => {
     if (!recipe || importing) return
@@ -77,8 +73,9 @@ export default function PicnicRecipeDetail({ username }) {
 
           <div className="detail-body">
             <div className="detail-meta">
-              {recipe.prepTime && <span>⏱ {recipe.prepTime} min &nbsp;</span>}
               <span>🍽 {recipe.portions} personen</span>
+              {recipe.category && <span style={{ marginLeft: 8 }}>· {recipe.category}</span>}
+              {recipe.area && <span style={{ marginLeft: 4 }}>· {recipe.area}</span>}
             </div>
 
             {recipe.ingredients?.length > 0 && (
@@ -88,14 +85,10 @@ export default function PicnicRecipeDetail({ username }) {
                   {recipe.ingredients.map((ing, i) => (
                     <li key={i} className="ingredient-item">
                       <span className="ing-amount-detail">
-                        {ing.amount && ing.amount !== 1 ? ing.amount : ''} {ing.unit !== 'stuks' ? ing.unit : ''}
+                        {ing.amount && ing.amount !== 1 ? ing.amount : ''}{' '}
+                        {ing.unit !== 'stuks' ? ing.unit : ''}
                       </span>
-                      <span>
-                        {ing.name}
-                        {ing.picnicProductId && (
-                          <span style={{ fontSize: 11, color: 'var(--picnic)', marginLeft: 6 }}>🚲</span>
-                        )}
-                      </span>
+                      <span>{ing.name}</span>
                     </li>
                   ))}
                 </ul>
@@ -112,10 +105,10 @@ export default function PicnicRecipeDetail({ username }) {
             )}
 
             <button
-              className="btn-picnic"
+              className="btn-primary"
               onClick={handleImport}
               disabled={importing || imported}
-              style={{ marginTop: 8 }}
+              style={{ width: '100%', marginTop: 8 }}
             >
               {imported ? '✓ Geïmporteerd!' : importing ? 'Importeren…' : '+ Importeer als recept'}
             </button>

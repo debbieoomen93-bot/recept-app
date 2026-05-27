@@ -9,6 +9,7 @@ import WeekPlanning from './components/WeekPlanning'
 import ShoppingList from './components/ShoppingList'
 import PicnicRecipes from './components/PicnicRecipes'
 import PicnicRecipeDetail from './components/PicnicRecipeDetail'
+import AIRecipe from './components/AIRecipe'
 import { isAuthenticated, getUsername } from './auth'
 import { signInAsGuest } from './firebase'
 
@@ -43,7 +44,8 @@ export default function App() {
           <Route path="/planning" element={<WeekPlanning />} />
           <Route path="/boodschappen" element={<ShoppingList />} />
           <Route path="/picnic" element={<PicnicRecipes />} />
-          <Route path="/picnic/:recipeId" element={<PicnicRecipeDetail username={username} />} />
+          <Route path="/picnic/ai" element={<AIRecipe username={username} />} />
+          <Route path="/picnic/db/:mealId" element={<PicnicRecipeDetail username={username} />} />
         </Routes>
       </div>
       <nav className="bottom-nav">
@@ -51,7 +53,7 @@ export default function App() {
           <span>📋</span><span>Jouw recepten</span>
         </NavLink>
         <NavLink to="/picnic" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-          <span>🚲</span><span>Picnic recepten</span>
+          <span>🔍</span><span>Recepten</span>
         </NavLink>
         <NavLink to="/planning" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
           <span>📅</span><span>Planning</span>

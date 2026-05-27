@@ -1,72 +1,86 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-export default function PicnicRecipes() {
+export default function RecipeSearch() {
+  const [searchTerm, setSearchTerm] = useState('')
   const [recipes, setRecipes] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [debugInfo, setDebugInfo] = useState(null)
+  const [searched, setSearched] = useState(false)
   const navigate = useNavigate()
 
-  const authToken = localStorage.getItem('picnic-auth-token')
-
-  useEffect(() => {
-    if (!authToken) return
+  const search = async (e) => {
+    e.preventDefault()
+    if (!searchTerm.trim()) return
     setLoading(true)
     setError(null)
-    fetch('/api/picnic-recipes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ authToken }),
-    })
-      .then(r => r.json())
-      .then(data => {
-        if (data.tokenExpired) localStorage.removeItem('picnic-auth-token')
-        if (data.error) throw new Error(data.error)
-        setRecipes(data.recipes || [])
-        if (data._debug) { console.warn('[PicnicRecipes] debug:', data._debug); setDebugInfo(data._debug) }
+    try {
+      const r = await fetch('/api/search-recipes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ searchTerm: searchTerm.trim() }),
       })
-      .catch(e => setError(e.message))
-      .finally(() => setLoading(false))
-  }, [authToken])
+      const data = await r.json()
+      if (data.error) throw new Error(data.error)
+      setRecipes(data.recipes || [])
+      setSearched(true)
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div>
       <div className="topbar">
-        <span>🚲 Picnic Recepten</span>
+        <span>🔍 Recepten zoeken</span>
       </div>
 
-      {!authToken ? (
+      <form onSubmit={search} style={{ padding: '12px 12px 0', display: 'flex', gap: 8 }}>
+        <input
+          type="search"
+          className="recipe-search-input"
+          placeholder="Zoek een gerecht…"
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          autoCapitalize="none"
+        />
+        <button type="submit" className="btn-primary" disabled={loading} style={{ flexShrink: 0 }}>
+          {loading ? '…' : 'Zoeken'}
+        </button>
+      </form>
+
+      <div style={{ padding: '6px 12px 8px', textAlign: 'right' }}>
+        <button
+          type="button"
+          className="btn-link"
+          onClick={() => navigate('/picnic/ai')}
+        >
+          ✨ AI recept genereren →
+        </button>
+      </div>
+
+      {error && (
+        <div className="empty-state" style={{ color: '#d32f2f' }}>⚠️ {error}</div>
+      )}
+
+      {loading ? (
+        <div className="empty-state">Zoeken…</div>
+      ) : searched && recipes.length === 0 ? (
         <div className="empty-state">
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🚲</div>
-          <p style={{ fontWeight: 600, marginBottom: 8 }}>Verbind met Picnic</p>
-          <p style={{ fontSize: 13, color: '#888', maxWidth: 260, margin: '0 auto' }}>
-            Zoek een ingrediënt in een recept om in te loggen bij Picnic — dan verschijnen hier de Picnic-recepten.
-          </p>
+          <div style={{ marginBottom: 12 }}>Geen recepten gevonden voor "{searchTerm}"</div>
+          <button type="button" className="btn-picnic" onClick={() => navigate('/picnic/ai')}>
+            ✨ Laat AI dit recept maken
+          </button>
         </div>
-      ) : loading ? (
-        <div className="empty-state">Recepten laden…</div>
-      ) : error ? (
-        <div className="empty-state" style={{ color: '#d32f2f' }}>
-          <div style={{ marginBottom: 8 }}>⚠️ {error}</div>
-        </div>
-      ) : recipes.length === 0 ? (
-        <div className="empty-state">
-          <div>Geen recepten gevonden</div>
-          {debugInfo && (
-            <details style={{ marginTop: 12, fontSize: 11, textAlign: 'left', maxWidth: 320 }}>
-              <summary style={{ cursor: 'pointer', color: '#888' }}>Debug info</summary>
-              <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all', color: '#555', marginTop: 8 }}>{debugInfo}</pre>
-            </details>
-          )}
-        </div>
-      ) : (
+      ) : recipes.length > 0 ? (
         <div className="picnic-recipe-grid">
           {recipes.map(recipe => (
             <div
               key={recipe.id}
               className="picnic-recipe-card"
-              onClick={() => navigate(`/picnic/${encodeURIComponent(recipe.id)}`)}
+              onClick={() => navigate(`/picnic/db/${recipe.id}`)}
             >
               <div className="picnic-card-img">
                 {recipe.imageUrl
@@ -76,10 +90,21 @@ export default function PicnicRecipes() {
               </div>
               <div className="picnic-card-body">
                 <div className="picnic-card-title">{recipe.name}</div>
-                {recipe.subHeader && <div className="picnic-card-sub">{recipe.subHeader}</div>}
+                {recipe.category && <div className="picnic-card-sub">{recipe.category}{recipe.area ? ` · ${recipe.area}` : ''}</div>}
               </div>
             </div>
           ))}
+        </div>
+      ) : (
+        <div className="empty-state">
+          <div style={{ fontSize: 48, marginBottom: 12 }}>🔍</div>
+          <p style={{ fontWeight: 600, marginBottom: 8 }}>Zoek een recept</p>
+          <p style={{ fontSize: 13, color: '#888', maxWidth: 260, margin: '0 auto 16px' }}>
+            Zoek in duizenden recepten of laat AI een Nederlands recept voor je maken.
+          </p>
+          <button type="button" className="btn-picnic" onClick={() => navigate('/picnic/ai')}>
+            ✨ AI recept genereren
+          </button>
         </div>
       )}
     </div>
