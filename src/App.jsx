@@ -7,6 +7,8 @@ import RecipeForm from './components/RecipeForm'
 import RecipeDetail from './components/RecipeDetail'
 import WeekPlanning from './components/WeekPlanning'
 import ShoppingList from './components/ShoppingList'
+import PicnicRecipes from './components/PicnicRecipes'
+import PicnicRecipeDetail from './components/PicnicRecipeDetail'
 import { isAuthenticated, getUsername } from './auth'
 import { signInAsGuest } from './firebase'
 
@@ -40,6 +42,8 @@ export default function App() {
           <Route path="/recepten/:id/bewerken" element={<RecipeForm username={username} />} />
           <Route path="/planning" element={<WeekPlanning />} />
           <Route path="/boodschappen" element={<ShoppingList />} />
+          <Route path="/picnic" element={<PicnicRecipes />} />
+          <Route path="/picnic/:recipeId" element={<PicnicRecipeDetail username={username} />} />
         </Routes>
       </div>
       <nav className="bottom-nav">
@@ -51,6 +55,9 @@ export default function App() {
         </NavLink>
         <NavLink to="/boodschappen" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
           <span>🛒</span><span>Boodschappen</span>
+        </NavLink>
+        <NavLink to="/picnic" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+          <span>🚲</span><span>Picnic</span>
         </NavLink>
       </nav>
     </div>
