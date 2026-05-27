@@ -13,74 +13,82 @@ async function fetchDirect(authToken, path) {
         'x-picnic-auth': authToken,
         'x-picnic-agent': AGENT,
         'Accept-Language': 'nl_NL',
-        'Content-Type': 'application/json',
       }
     })
-    if (!res.ok) return { _status: res.status }
+    if (!res.ok) return null
     return res.json()
   } catch { return null }
 }
 
-// Extract all SUSPENSE components with a non-null pageConfig.id
-function extractSuspenseConfigs(page) {
-  const configs = []
-  const seen = new Set()
-  function walk(val) {
-    if (!val || typeof val !== 'object') return
-    if (Array.isArray(val)) { val.forEach(walk); return }
-    if (val.type === 'SUSPENSE' && val.pageConfig?.id && !seen.has(val.pageConfig.id)) {
-      seen.add(val.pageConfig.id)
-      configs.push({ pageConfigId: val.pageConfig.id, params: val.pageConfig.parameters || {} })
-    }
-    for (const [k, v] of Object.entries(val)) {
-      if (k === 'script') continue
-      if (typeof v === 'object') walk(v)
-    }
-  }
-  walk(page)
-  return configs
+// Try to extract recipes from a direct API response (array or items list)
+function extractDirect(data) {
+  if (!data) return null
+  const list = Array.isArray(data) ? data
+    : data.recipes || data.items || data.results || data.data
+  if (!Array.isArray(list) || list.length === 0) return null
+  return list
+    .filter(x => x && typeof x === 'object' && x.id && (x.name || x.title))
+    .map(x => {
+      const imageId = Array.isArray(x.image_ids) ? x.image_ids[0]
+        : x.image?.image_id || x.image_id || null
+      return {
+        id: String(x.id),
+        name: x.name || x.title || x.header,
+        imageUrl: imgUrl(imageId),
+        subHeader: x.sub_header || x.subtitle || null,
+      }
+    })
 }
 
-// Try to find recipe-like items in a FusionPage response.
-// Only returns items that look like individual recipes (have a name + image or selling-group reference).
-function extractRecipesFromPage(data) {
-  if (!data || data._status) return []
+// Collect every object in every array that has an id + non-trivial name
+function extractFromPage(root) {
   const seen = new Set()
   const results = []
-  const SKIP = new Set(['title', 'header', 'page', 'root', 'content', 'home', 'more', 'all', 'maaltijden', 'recepten', 'meals', 'recipes'])
+  const SKIP_NAMES = new Set(['title', 'header', 'page', 'root', 'content', 'home', 'more', 'all'])
+
+  function isCandidate(item) {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) return false
+    const id = item.id
+    const name = item.name || item.header || item.title || item.display_name
+    if (!id || typeof id !== 'string' || id.length < 4) return false
+    if (!name || typeof name !== 'string' || name.length < 3) return false
+    if (SKIP_NAMES.has(name.toLowerCase())) return false
+    return true
+  }
 
   function walk(node) {
     if (!node || typeof node !== 'object') return
     if (Array.isArray(node)) {
       for (const item of node) {
-        const id = item?.params?.recipe_id || item?.params?.selling_group_id || item?.recipe_id || item?.selling_group_id
-        const name = item?.params?.name || item?.params?.title || item?.params?.recipe_name || item?.name
-        if (id && name && typeof id === 'string' && typeof name === 'string' && name.length >= 3 && !SKIP.has(name.toLowerCase()) && !seen.has(id)) {
-          seen.add(id)
-          const imageId = item?.params?.image_id
-            || (Array.isArray(item?.params?.image_ids) ? item.params.image_ids[0] : null)
-            || item?.image_id || null
-          results.push({ id, name, imageUrl: imgUrl(imageId), subHeader: null })
+        if (isCandidate(item) && !seen.has(item.id)) {
+          seen.add(item.id)
+          const imageId = Array.isArray(item.image_ids) ? item.image_ids[0]
+            : item.image?.image_id || item.image_id || null
+          results.push({
+            id: item.id,
+            name: item.name || item.header || item.title || item.display_name,
+            imageUrl: imgUrl(imageId),
+            subHeader: item.sub_header || item.subtitle || null,
+          })
         }
         walk(item)
       }
     } else {
-      for (const [k, v] of Object.entries(node)) {
-        if (k === 'script') continue
-        if (typeof v === 'object') walk(v)
+      for (const val of Object.values(node)) {
+        if (typeof val === 'object') walk(val)
       }
     }
   }
-  walk(data)
+
+  walk(root)
   return results
 }
 
-// Trim a value for debug display
-function trimDebug(val, maxLen = 200) {
-  if (!val) return val
-  if (val._status) return `HTTP ${val._status}`
-  const s = JSON.stringify(val)
-  return s.length > maxLen ? s.slice(0, maxLen) + '…' : s
+function debugSample(page) {
+  try {
+    const str = JSON.stringify(page)
+    return str.length > 1200 ? str.slice(0, 1200) + '…' : str
+  } catch { return '(niet leesbaar)' }
 }
 
 export default async function handler(req, res) {
@@ -88,49 +96,37 @@ export default async function handler(req, res) {
   const { authToken } = req.body
   if (!authToken) return res.status(400).json({ error: 'authToken verplicht' })
 
-  const debug = {}
-
   try {
-    const client = new PicnicClient({ countryCode: 'NL', authKey: authToken })
+    // 1. Try direct Picnic API endpoints
+    const directPaths = [
+      '/recipes',
+      '/recipes/overview',
+      '/recipes/page',
+      '/cms/page-content/recipes',
+    ]
+    for (const path of directPaths) {
+      const data = await fetchDirect(authToken, path)
+      const recipes = extractDirect(data)
+      if (recipes && recipes.length > 0) {
+        return res.status(200).json({ recipes, _source: path })
+      }
+    }
 
-    // 1. Get the FusionPage and extract SUSPENSE page IDs
+    // 2. Fall back to picnic-api package FusionPage
+    const client = new PicnicClient({ countryCode: 'NL', authKey: authToken })
     let page = null
     try {
       page = await client.recipe.getRecipesPage()
     } catch (pkgErr) {
       page = pkgErr?.data || pkgErr?.response || pkgErr?.body || null
+      if (!page) throw pkgErr
     }
 
-    if (page) {
-      const suspenseConfigs = extractSuspenseConfigs(page)
-      debug.suspenseConfigs = suspenseConfigs.map(c => c.pageConfigId)
-
-      // Fetch each SUSPENSE page and look for recipe items
-      for (const { pageConfigId, params } of suspenseConfigs) {
-        const query = Object.entries(params).map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`).join('&')
-        const path = `/pages/${pageConfigId}${query ? `?${query}` : ''}`
-        const data = await fetchDirect(authToken, path)
-        debug[pageConfigId] = trimDebug(data)
-        const recipes = extractRecipesFromPage(data)
-        if (recipes.length > 0) return res.status(200).json({ recipes, _source: `suspense:${pageConfigId}` })
-      }
-    }
-
-    // 2. Try a few more direct paths with recipe-specific endpoints
-    const extraPaths = [
-      '/pages/planner-cloud-wrapper',
-      '/pages/meal-planner-cloud-wrapper',
-      '/pages/cooking-widget-page',
-      '/pages/my-saved-recipes',
-    ]
-    for (const path of extraPaths) {
-      const data = await fetchDirect(authToken, path)
-      debug[path] = trimDebug(data)
-      const recipes = extractRecipesFromPage(data)
-      if (recipes.length > 0) return res.status(200).json({ recipes, _source: `extra:${path}` })
-    }
-
-    return res.status(200).json({ recipes: [], _debug: debug })
+    const recipes = extractFromPage(page)
+    return res.status(200).json({
+      recipes,
+      _debug: recipes.length === 0 ? debugSample(page) : undefined,
+    })
   } catch (err) {
     const tokenExpired = /403|401|Unauthorized|Forbidden/i.test(err.message)
     res.status(tokenExpired ? 401 : 500).json({ error: err.message, tokenExpired })
