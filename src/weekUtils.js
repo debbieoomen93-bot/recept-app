@@ -18,6 +18,19 @@ export function getWeekDays() {
   return ['maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag', 'zondag']
 }
 
+export function getWeekDates(weekId) {
+  const [year, week] = weekId.split('-').map(Number)
+  const jan4 = new Date(year, 0, 4)
+  const dayOfJan4 = jan4.getDay() || 7
+  const monday = new Date(jan4)
+  monday.setDate(jan4.getDate() - (dayOfJan4 - 1) + (week - 1) * 7)
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday)
+    d.setDate(monday.getDate() + i)
+    return d
+  })
+}
+
 export function getPrevWeekId(weekId) {
   const [year, week] = weekId.split('-').map(Number)
   if (week === 1) {
@@ -35,3 +48,4 @@ export function getNextWeekId(weekId) {
   }
   return `${year}-${String(week + 1).padStart(2, '0')}`
 }
+
