@@ -84,3 +84,13 @@ export async function setDayRecipe(weekId, dayName, recipeId, spans2Days) {
     }
   }, { merge: true })
 }
+
+export async function moveDayRecipe(weekId, fromDay, toDay, recipeId, spans2Days) {
+  const docRef = doc(db, 'weekplanning', weekId)
+  await setDoc(docRef, {
+    days: {
+      [fromDay]: { recipeId: null, spans2Days: false },
+      [toDay]: { recipeId, spans2Days: spans2Days || false }
+    }
+  }, { merge: true })
+}
