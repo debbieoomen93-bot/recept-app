@@ -163,7 +163,9 @@ export default function RecipeSearch({ username }) {
         {!loading && mode === 'ai' && aiRecipe && (
           <div className="search-section-card">
             <h2 style={{ margin: '0 0 4px', fontSize: 18 }}>{aiRecipe.title}</h2>
-            <div style={{ fontSize: 13, color: '#888', marginBottom: 16 }}>🍽 {aiRecipe.portions} personen</div>
+            <div style={{ fontSize: 13, color: '#888', marginBottom: 16 }}>
+              🍽 {aiRecipe.portions} personen{aiRecipe.kcalPerPortion ? ` · ~${aiRecipe.kcalPerPortion} kcal p.p.` : ''}
+            </div>
 
             {aiRecipe.ingredients?.length > 0 && (
               <>

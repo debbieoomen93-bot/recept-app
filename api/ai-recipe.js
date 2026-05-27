@@ -23,6 +23,7 @@ export default async function handler(req, res) {
 {
   "title": "naam van het gerecht",
   "portions": 4,
+  "kcalPerPortion": 550,
   "ingredients": [
     { "name": "ingredientnaam", "amount": 200, "unit": "gram", "category": "Groente & fruit" }
   ],
@@ -36,7 +37,8 @@ Regels:
 - Gebruik Nederlandse maateenheden: gram, kilogram, milliliter, liter, eetlepel, theelepel, stuks, snufje, takje, teen
 - amount is altijd een getal (geen string)
 - Categorieën: "Groente & fruit", "Vlees, vis & vega", "Zuivel & eieren", "Pasta, rijst & granen", "Blikken & potten", "Sauzen & kruiden", "Bakken & koken", "Dranken", "Overig"
-- Geef 6-12 ingrediënten en 4-8 stappen`
+- Geef 6-12 ingrediënten en 4-8 stappen
+- kcalPerPortion is een geheel getal (integer) met een schatting van de calorieën per portie op basis van standaard voedingswaarden`
         }]
       })
     })

@@ -90,6 +90,7 @@ export default function TheMealDBDetail({ username }) {
           <div className="detail-body">
             <div className="detail-meta">
               <span>🍽 {recipe.portions} personen</span>
+              {recipe.kcalPerPortion && <span style={{ marginLeft: 8 }}>· ~{recipe.kcalPerPortion} kcal p.p.</span>}
               {recipe.category && <span style={{ marginLeft: 8 }}>· {recipe.category}</span>}
               {recipe.area && <span style={{ marginLeft: 4 }}>· {recipe.area}</span>}
             </div>

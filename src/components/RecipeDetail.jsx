@@ -1,7 +1,8 @@
 // src/components/RecipeDetail.jsx
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { subscribeToRecipe, deleteRecipe, regenerateRecipeImage } from '../firebase'
+import { calculateKcal } from '../utils/kcal'
 
 export default function RecipeDetail() {
   const { id } = useParams()
@@ -11,6 +12,11 @@ export default function RecipeDetail() {
   const [shareToast, setShareToast] = useState(false)
 
   useEffect(() => subscribeToRecipe(id, setRecipe), [id])
+
+  const kcalResult = useMemo(() => {
+    if (!recipe) return null
+    return calculateKcal(recipe.ingredients, recipe.portions)
+  }, [recipe])
 
   const handleRegenerate = async () => {
     setRegenerating(true)
@@ -84,7 +90,9 @@ export default function RecipeDetail() {
       </div>
 
       <div className="detail-body">
-        <div className="detail-meta">{recipe.portions} personen · {recipe.createdBy}</div>
+        <div className="detail-meta">
+          {recipe.portions} personen{kcalResult ? ` · ~${kcalResult.kcalPerPortion} kcal p.p.` : ''} · {recipe.createdBy}
+        </div>
         {recipe.description && <p className="detail-description">{recipe.description}</p>}
 
         <h3>Ingrediënten</h3>

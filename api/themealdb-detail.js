@@ -1,3 +1,5 @@
+import { calculateKcal } from './_kcal.js'
+
 const CATEGORY_RULES = [
   ['Groente & fruit', ['tomato', 'onion', 'garlic', 'carrot', 'potato', 'lettuce', 'spinach', 'pepper', 'mushroom', 'zucchini', 'courgette', 'lemon', 'lime', 'avocado', 'mango', 'orange', 'apple', 'ginger', 'celery', 'cucumber', 'aubergine', 'eggplant', 'chilli', 'chili', 'parsley', 'spring onion', 'scallion', 'leek', 'broccoli', 'cauliflower', 'asparagus', 'bean', 'pea', 'corn', 'cabbage', 'kale', 'pumpkin', 'squash', 'beetroot', 'radish']],
   ['Vlees, vis & vega', ['chicken', 'beef', 'pork', 'lamb', 'salmon', 'tuna', 'shrimp', 'prawn', 'meat', 'mince', 'sausage', 'turkey', 'duck', 'fish', 'cod', 'haddock', 'mackerel', 'sardine', 'anchovy', 'squid', 'crab', 'lobster', 'clam', 'mussel', 'bacon', 'ham', 'steak', 'tofu', 'tempeh']],
@@ -83,6 +85,8 @@ export default async function handler(req, res) {
       .map(s => s.replace(/^\s*\d+[.)]\s*/, '').trim())
       .filter(s => s.length > 4)
 
+    const kcalResult = calculateKcal(ingredients, 4)
+
     const recipe = {
       id: meal.idMeal,
       name: meal.strMeal,
@@ -94,6 +98,7 @@ export default async function handler(req, res) {
       source: 'db',
       category: meal.strCategory,
       area: meal.strArea,
+      kcalPerPortion: kcalResult ? kcalResult.kcalPerPortion : null,
     }
 
     res.status(200).json({ recipe })
