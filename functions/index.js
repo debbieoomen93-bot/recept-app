@@ -8,7 +8,7 @@ const app = initializeApp()
 
 const PROJECT_ID = process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT || app.options.projectId
 const LOCATION = 'us-central1'
-const MODEL = 'imagegeneration@006'
+const MODEL = 'imagen-3.0-generate-001'
 
 async function generateAndStoreImage(recipeId, recipe) {
   const { PredictionServiceClient } = require('@google-cloud/aiplatform').v1
