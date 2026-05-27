@@ -76,8 +76,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 /* WeekPlanning */
 .day-row { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
-.day-label { width: 30px; font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; flex-shrink: 0; }
+.day-row-today { background: var(--green-light); }
+.day-label { width: 36px; display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+.day-short { font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; }
+.day-date { font-size: 10px; color: #bbb; margin-top: 1px; }
+.day-row-today .day-short { color: var(--green); }
+.day-row-today .day-date { color: var(--green); font-weight: 600; }
 .day-recipe { flex: 1; background: var(--green-light); border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight: 500; color: var(--green); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.day-row-today .day-recipe { background: white; }
 .day-recipe.second-day { opacity: 0.65; }
 .day-empty { flex: 1; border: 1.5px dashed #ddd; border-radius: 8px; padding: 8px 12px; font-size: 13px; color: #bbb; }
 .day-badge { font-size: 11px; background: white; border-radius: 4px; padding: 2px 6px; color: var(--green); }
