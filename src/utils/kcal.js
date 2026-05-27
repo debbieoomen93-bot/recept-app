@@ -338,8 +338,7 @@ export function calculateKcal(ingredients, portions) {
     totalKcal += (kcalPer100g * grams) / 100
   }
 
-  const matchRatio = matched / ingredients.length
-  if (matchRatio < 0.3) return null
+  if (matched === 0) return null
 
   const totalRounded = Math.round(totalKcal)
   const perPortion = Math.round(totalKcal / p)
