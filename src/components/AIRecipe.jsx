@@ -9,7 +9,22 @@ export default function AIRecipe({ username }) {
   const [error, setError] = useState(null)
   const [importing, setImporting] = useState(false)
   const [imported, setImported] = useState(false)
+  const [shareToast, setShareToast] = useState(false)
   const navigate = useNavigate()
+
+  const handleShare = async () => {
+    if (!recipe) return
+    const text = `🍽 ${recipe.title}\n\n👥 ${recipe.portions} personen\n\n📋 Ingrediënten:\n${recipe.ingredients.map(i => `• ${i.amount} ${i.unit} ${i.name}`).join('\n')}\n\n👨‍🍳 Bereiding:\n${recipe.steps.map((s, idx) => `${idx + 1}. ${s}`).join('\n')}`
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: recipe.title, text })
+      } else {
+        await navigator.clipboard.writeText(text)
+        setShareToast(true)
+        setTimeout(() => setShareToast(false), 2500)
+      }
+    } catch (_) {}
+  }
 
   const generate = async (e) => {
     e.preventDefault()
@@ -59,7 +74,7 @@ export default function AIRecipe({ username }) {
       <div className="topbar">
         <button className="topbar-back" onClick={() => navigate(-1)}>←</button>
         <span>✨ AI Recept</span>
-        <span style={{ width: 40 }} />
+        <button className="topbar-save" onClick={handleShare} disabled={!recipe} title="Delen">📤</button>
       </div>
 
       <div className="detail-body" style={{ paddingTop: 16 }}>
@@ -81,6 +96,8 @@ export default function AIRecipe({ username }) {
             </button>
           </div>
         </form>
+
+        {shareToast && <div className="share-toast">Gekopieerd naar klembord!</div>}
 
         {loading && (
           <div className="empty-state">

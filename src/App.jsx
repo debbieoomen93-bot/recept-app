@@ -10,8 +10,12 @@ import ShoppingList from './components/ShoppingList'
 import PicnicRecipes from './components/PicnicRecipes'
 import PicnicRecipeDetail from './components/PicnicRecipeDetail'
 import AIRecipe from './components/AIRecipe'
+import PublicRecipeView from './components/PublicRecipeView'
+import PublicMealDBView from './components/PublicMealDBView'
 import { isAuthenticated, getUsername } from './auth'
 import { signInAsGuest } from './firebase'
+
+const isPublicRoute = /^\/recept\//.test(window.location.pathname)
 
 export default function App() {
   const [authed, setAuthed] = useState(() => isAuthenticated(import.meta.env.VITE_SHARED_PASSWORD))
@@ -23,6 +27,15 @@ export default function App() {
       signInAsGuest().then(() => setFirebaseReady(true)).catch(() => setFirebaseReady(true))
     }
   }, [authed])
+
+  if (isPublicRoute) {
+    return (
+      <Routes>
+        <Route path="/recept/db/:mealId" element={<PublicMealDBView />} />
+        <Route path="/recept/:id" element={<PublicRecipeView />} />
+      </Routes>
+    )
+  }
 
   if (!authed) {
     return <Login onLogin={() => setAuthed(true)} />

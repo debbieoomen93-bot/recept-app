@@ -68,6 +68,11 @@ export function subscribeToRecipe(id, callback) {
   })
 }
 
+export async function getRecipe(id) {
+  const snap = await getDoc(doc(db, 'recipes', id))
+  return snap.exists() ? { id: snap.id, ...snap.data() } : null
+}
+
 // --- Week planning ---
 
 export function subscribeToWeekPlanning(weekId, callback) {

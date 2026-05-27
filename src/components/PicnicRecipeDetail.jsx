@@ -9,7 +9,21 @@ export default function TheMealDBDetail({ username }) {
   const [error, setError] = useState(null)
   const [importing, setImporting] = useState(false)
   const [imported, setImported] = useState(false)
+  const [shareToast, setShareToast] = useState(false)
   const navigate = useNavigate()
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}/recept/db/${mealId}`
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: recipe?.name || 'Recept', url })
+      } else {
+        await navigator.clipboard.writeText(url)
+        setShareToast(true)
+        setTimeout(() => setShareToast(false), 2500)
+      }
+    } catch (_) {}
+  }
 
   useEffect(() => {
     setLoading(true)
@@ -54,8 +68,10 @@ export default function TheMealDBDetail({ username }) {
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {recipe?.name || 'Recept'}
         </span>
-        <span style={{ width: 40 }} />
+        <button className="topbar-save" onClick={handleShare} disabled={!recipe} title="Delen">📤</button>
       </div>
+
+      {shareToast && <div className="share-toast">Link gekopieerd!</div>}
 
       {loading ? (
         <div className="empty-state">Recept laden…</div>

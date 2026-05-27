@@ -8,6 +8,7 @@ export default function RecipeDetail() {
   const navigate = useNavigate()
   const [recipe, setRecipe] = useState(null)
   const [regenerating, setRegenerating] = useState(false)
+  const [shareToast, setShareToast] = useState(false)
 
   useEffect(() => subscribeToRecipe(id, setRecipe), [id])
 
@@ -16,11 +17,23 @@ export default function RecipeDetail() {
     try {
       await regenerateRecipeImage(recipe.id)
     } catch (err) {
-      console.error('Regenereren mislukt:', err)
       alert('Opnieuw genereren mislukt — probeer het nogmaals')
     } finally {
       setRegenerating(false)
     }
+  }
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}/recept/${id}`
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: recipe.title, url, text: `Bekijk dit recept: ${recipe.title}` })
+      } else {
+        await navigator.clipboard.writeText(url)
+        setShareToast(true)
+        setTimeout(() => setShareToast(false), 2500)
+      }
+    } catch (_) {}
   }
 
   if (!recipe) return <div className="empty-state"><p>Laden...</p></div>
@@ -31,7 +44,6 @@ export default function RecipeDetail() {
         await deleteRecipe(id)
         navigate('/recepten')
       } catch (err) {
-        console.error('Verwijderen mislukt:', err)
         alert('Verwijderen mislukt — probeer het opnieuw')
       }
     }
@@ -42,8 +54,15 @@ export default function RecipeDetail() {
       <div className="topbar">
         <button className="topbar-back" onClick={() => navigate(-1)}>←</button>
         <span style={{ fontSize: '15px' }}>{recipe.title}</span>
-        <button className="topbar-save" onClick={() => navigate(`/recepten/${id}/bewerken`)}>✏️</button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="topbar-save" onClick={handleShare} title="Delen">📤</button>
+          <button className="topbar-save" onClick={() => navigate(`/recepten/${id}/bewerken`)}>✏️</button>
+        </div>
       </div>
+
+      {shareToast && (
+        <div className="share-toast">Link gekopieerd!</div>
+      )}
 
       <div className="detail-image-container">
         {recipe.imageStatus === 'done' && recipe.imageUrl
