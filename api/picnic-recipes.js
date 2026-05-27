@@ -108,12 +108,12 @@ function extractFromPage(root) {
   return results
 }
 
-// Return page structure with script stripped, focused on the body tree
+// Navigate directly to campaign-meals-section children and show their structure
 function debugStructure(page) {
   function trim(val, depth) {
     if (depth <= 0) return '…'
     if (val === null || val === undefined) return val
-    if (typeof val === 'string') return val.length > 60 ? val.slice(0, 60) + '…' : val
+    if (typeof val === 'string') return val.length > 80 ? val.slice(0, 80) + '…' : val
     if (typeof val !== 'object') return val
     if (Array.isArray(val)) {
       const sample = val.slice(0, 3).map(x => trim(x, depth - 1))
@@ -121,17 +121,29 @@ function debugStructure(page) {
     }
     const out = {}
     for (const [k, v] of Object.entries(val)) {
-      if (k === 'script') { out[k] = `{${Object.keys(v || {}).length} functies}`; continue }
+      if (['script', 'onMount', 'onPageFocus', 'onUnmount', 'analytics'].includes(k)) continue
       out[k] = trim(v, depth - 1)
     }
     return out
   }
   try {
-    // Focus on layout.body where recipe components live; fall back to full page
-    const focus = page?.layout?.body ?? page?.layout ?? page
-    const str = JSON.stringify(trim(focus, 9), null, 1)
-    return str.length > 4000 ? str.slice(0, 4000) + '…' : str
-  } catch { return '(niet leesbaar)' }
+    // Navigate: layout.body → 3x child (STATE_BOUNDARY chain) → children[0] (campaign-page-layout) → children (sections)
+    const body = page?.layout?.body
+    const container = body?.child?.child?.child
+    const campaignLayout = container?.children?.[0]
+    const sections = (campaignLayout?.children || []).filter(
+      c => c && typeof c === 'object' && c.type === 'BLOCK' && Array.isArray(c.children)
+    )
+    const result = {
+      sectionCount: sections.length,
+      firstSectionId: sections[0]?.id,
+      firstSectionChildCount: sections[0]?.children?.length,
+      firstSectionFirstChild: trim(sections[0]?.children?.[0], 7),
+      firstSectionSecondChild: trim(sections[0]?.children?.[1], 4),
+    }
+    const str = JSON.stringify(result, null, 1)
+    return str.length > 5000 ? str.slice(0, 5000) + '…' : str
+  } catch (e) { return `(fout: ${e.message})` }
 }
 
 export default async function handler(req, res) {
