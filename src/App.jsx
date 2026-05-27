@@ -12,14 +12,21 @@ import { signInAsGuest } from './firebase'
 
 export default function App() {
   const [authed, setAuthed] = useState(() => isAuthenticated(import.meta.env.VITE_SHARED_PASSWORD))
+  const [firebaseReady, setFirebaseReady] = useState(false)
   const username = getUsername()
 
   useEffect(() => {
-    if (authed) signInAsGuest()
+    if (authed) {
+      signInAsGuest().then(() => setFirebaseReady(true)).catch(() => setFirebaseReady(true))
+    }
   }, [authed])
 
   if (!authed) {
     return <Login onLogin={() => setAuthed(true)} />
+  }
+
+  if (!firebaseReady) {
+    return null
   }
 
   return (
