@@ -13,6 +13,7 @@ async function fetchDirect(authToken, path) {
         'x-picnic-auth': authToken,
         'x-picnic-agent': AGENT,
         'Accept-Language': 'nl_NL',
+        'Content-Type': 'application/json',
       }
     })
     if (!res.ok) return null
@@ -20,134 +21,80 @@ async function fetchDirect(authToken, path) {
   } catch { return null }
 }
 
-// Try to extract recipes from a direct API response (array or items list)
-function extractDirect(data) {
-  if (!data) return null
-  const list = Array.isArray(data) ? data
-    : data.recipes || data.items || data.results || data.data
-  if (!Array.isArray(list) || list.length === 0) return null
-  return list
-    .filter(x => x && typeof x === 'object' && x.id && (x.name || x.title))
-    .map(x => {
-      const imageId = Array.isArray(x.image_ids) ? x.image_ids[0]
-        : x.image?.image_id || x.image_id || null
-      return {
-        id: String(x.id),
-        name: x.name || x.title || x.header,
-        imageUrl: imgUrl(imageId),
-        subHeader: x.sub_header || x.subtitle || null,
-      }
-    })
+// Walk a FusionPage and collect all SUSPENSE components that have a pageConfig.id
+function extractSuspenseConfigs(page) {
+  const configs = []
+  const seen = new Set()
+  function walk(val) {
+    if (!val || typeof val !== 'object') return
+    if (Array.isArray(val)) { val.forEach(walk); return }
+    if (val.type === 'SUSPENSE' && val.pageConfig?.id && !seen.has(val.pageConfig.id)) {
+      seen.add(val.pageConfig.id)
+      configs.push({ pageConfigId: val.pageConfig.id, params: val.pageConfig.parameters || {} })
+    }
+    for (const [k, v] of Object.entries(val)) {
+      if (k === 'script') continue
+      if (typeof v === 'object') walk(v)
+    }
+  }
+  walk(page)
+  return configs
 }
 
-// Collect recipe-like items from a FusionPage tree.
-// Looks in both direct fields and nested params objects.
-function extractFromPage(root) {
+// Extract recipe-like items from any FusionPage or list response
+function extractRecipes(data) {
+  if (!data) return []
   const seen = new Set()
   const results = []
-  const SKIP_NAMES = new Set([
-    'title', 'header', 'page', 'root', 'content', 'home', 'more', 'all',
-    'recepten', 'maaltijden', 'meals', 'recipes',
-  ])
 
-  function getName(item) {
-    return item.name || item.header || item.title || item.display_name
-      || item.meal_name || item.recipe_name
-      || item.params?.name || item.params?.meal_name || item.params?.recipe_name
-      || item.params?.title || item.params?.header || null
+  // Direct list
+  const list = Array.isArray(data) ? data
+    : data.recipes || data.items || data.results || data.data || data.selling_groups || data.meals
+  if (Array.isArray(list)) {
+    for (const x of list) {
+      if (!x?.id || !(x.name || x.title)) continue
+      const id = String(x.id)
+      if (seen.has(id)) continue
+      seen.add(id)
+      const imageId = Array.isArray(x.image_ids) ? x.image_ids[0]
+        : x.image?.image_id || x.image_id || null
+      results.push({ id, name: x.name || x.title, imageUrl: imgUrl(imageId), subHeader: x.sub_header || x.subtitle || null })
+    }
+    if (results.length > 0) return results
   }
 
-  function getId(item) {
-    return item.id || item.params?.id || item.params?.recipe_id || item.params?.meal_id || null
-  }
-
-  function getImageId(item) {
-    if (Array.isArray(item.image_ids) && item.image_ids.length > 0) return item.image_ids[0]
-    if (item.image?.image_id) return item.image.image_id
-    if (item.image_id) return item.image_id
-    if (item.params?.image_id) return item.params.image_id
-    if (Array.isArray(item.params?.image_ids)) return item.params.image_ids[0]
-    return null
-  }
-
-  function isCandidate(item) {
-    if (!item || typeof item !== 'object' || Array.isArray(item)) return false
-    const id = getId(item)
-    const name = getName(item)
-    if (!id || typeof id !== 'string' || id.length < 4) return false
-    if (!name || typeof name !== 'string' || name.length < 3) return false
-    if (SKIP_NAMES.has(name.toLowerCase())) return false
-    return true
-  }
-
+  // Walk FusionPage tree for recipe items
+  const SKIP = new Set(['title', 'header', 'page', 'root', 'content', 'home', 'more', 'all', 'maaltijden', 'recepten', 'meals', 'recipes'])
   function walk(node) {
     if (!node || typeof node !== 'object') return
     if (Array.isArray(node)) {
       for (const item of node) {
-        const id = getId(item)
-        if (isCandidate(item) && id && !seen.has(id)) {
+        const id = item?.id || item?.params?.recipe_id || item?.params?.selling_group_id
+        const name = item?.name || item?.header || item?.title || item?.params?.name || item?.params?.title
+        if (id && name && typeof id === 'string' && id.length >= 4 && typeof name === 'string' && name.length >= 3 && !SKIP.has(name.toLowerCase()) && !seen.has(id)) {
           seen.add(id)
-          results.push({
-            id,
-            name: getName(item),
-            imageUrl: imgUrl(getImageId(item)),
-            subHeader: item.sub_header || item.subtitle || item.params?.sub_header || null,
-          })
+          const imageId = Array.isArray(item.image_ids) ? item.image_ids[0]
+            : item.image?.image_id || item.image_id || item.params?.image_id || null
+          results.push({ id, name, imageUrl: imgUrl(imageId), subHeader: item.sub_header || item.subtitle || null })
         }
         walk(item)
       }
     } else {
-      for (const [key, val] of Object.entries(node)) {
-        if (key === 'script') continue  // skip compiled JS functions
-        if (typeof val === 'object') walk(val)
+      for (const [k, v] of Object.entries(node)) {
+        if (k === 'script') continue
+        if (typeof v === 'object') walk(v)
       }
     }
   }
-
-  walk(root)
+  walk(data)
   return results
 }
 
-// Navigate directly to campaign-meals-section children and show their structure
-function debugStructure(page) {
-  function trim(val, depth) {
-    if (depth <= 0) return '…'
-    if (val === null || val === undefined) return val
-    if (typeof val === 'string') return val.length > 80 ? val.slice(0, 80) + '…' : val
-    if (typeof val !== 'object') return val
-    if (Array.isArray(val)) {
-      const sample = val.slice(0, 3).map(x => trim(x, depth - 1))
-      return val.length > 3 ? [...sample, `(+${val.length - 3} meer)`] : sample
-    }
-    const out = {}
-    for (const [k, v] of Object.entries(val)) {
-      if (['script', 'onMount', 'onPageFocus', 'onUnmount', 'analytics'].includes(k)) continue
-      out[k] = trim(v, depth - 1)
-    }
-    return out
-  }
-  try {
-    const body = page?.layout?.body
-    const container = body?.child?.child?.child
-    const campaignLayout = container?.children?.[0]
-    const sections = (campaignLayout?.children || []).filter(
-      c => c && typeof c === 'object' && c.type === 'BLOCK' && Array.isArray(c.children)
-    )
-    // Navigate: section → children[1] (STATE_BOUNDARY) → child → children[0]
-    const section0 = sections[0]
-    const sectionStateBoundary = section0?.children?.[1]
-    const sectionBlock = sectionStateBoundary?.child
-    const innerBlock = sectionBlock?.children?.[0]
-    const result = {
-      sectionCount: sections.length,
-      innerBlockId: innerBlock?.id,
-      innerBlockType: innerBlock?.type,
-      innerBlockChildCount: innerBlock?.children?.length ?? innerBlock?.child ? 1 : 0,
-      innerBlockFirstChild: trim(innerBlock?.children?.[0] ?? innerBlock?.child, 8),
-    }
-    const str = JSON.stringify(result, null, 1)
-    return str.length > 6000 ? str.slice(0, 6000) + '…' : str
-  } catch (e) { return `(fout: ${e.message})` }
+// Build catalog item as recipe entry
+function catalogToRecipe(item) {
+  if (!item?.id || !item?.name) return null
+  const imageId = item.image_id || (Array.isArray(item.image_ids) ? item.image_ids[0] : null)
+  return { id: String(item.id), name: item.name, imageUrl: imgUrl(imageId), subHeader: item.unit_quantity || null }
 }
 
 export default async function handler(req, res) {
@@ -155,37 +102,60 @@ export default async function handler(req, res) {
   const { authToken } = req.body
   if (!authToken) return res.status(400).json({ error: 'authToken verplicht' })
 
+  const debug = {}
+
   try {
-    // 1. Try direct Picnic API endpoints
+    const client = new PicnicClient({ countryCode: 'NL', authKey: authToken })
+
+    // 1. Try direct endpoints
     const directPaths = [
-      '/recipes',
-      '/recipes/overview',
-      '/recipes/page',
-      '/cms/page-content/recipes',
+      '/selling_groups',
+      '/selling_groups?offset=0&limit=50',
+      '/meals',
+      '/maaltijden',
+      '/pages/planner-cloud-wrapper',
+      '/pages/cooking-widget',
     ]
     for (const path of directPaths) {
       const data = await fetchDirect(authToken, path)
-      const recipes = extractDirect(data)
-      if (recipes && recipes.length > 0) {
-        return res.status(200).json({ recipes, _source: path })
-      }
+      const recipes = extractRecipes(data)
+      if (recipes.length > 0) return res.status(200).json({ recipes, _source: `direct:${path}` })
+      if (data) debug[path] = JSON.stringify(data).slice(0, 150)
     }
 
-    // 2. Fall back to picnic-api package FusionPage
-    const client = new PicnicClient({ countryCode: 'NL', authKey: authToken })
+    // 2. Catalog search for meal-related terms
+    for (const term of ['maaltijden', 'maaltijdbox', 'kookdoos']) {
+      try {
+        const results = await client.catalog.search(term)
+        const mapped = (results || []).map(catalogToRecipe).filter(Boolean)
+        if (mapped.length > 0) return res.status(200).json({ recipes: mapped, _source: `catalog:${term}` })
+        debug[`catalog:${term}`] = (results || []).slice(0, 2).map(x => ({ id: x?.id, name: x?.name }))
+      } catch (e) { debug[`catalog:${term}`] = `fout: ${e.message}` }
+    }
+
+    // 3. Get FusionPage, extract SUSPENSE pageConfig IDs, fetch each
     let page = null
     try {
       page = await client.recipe.getRecipesPage()
     } catch (pkgErr) {
       page = pkgErr?.data || pkgErr?.response || pkgErr?.body || null
-      if (!page) throw pkgErr
     }
 
-    const recipes = extractFromPage(page)
-    return res.status(200).json({
-      recipes,
-      _debug: recipes.length === 0 ? debugStructure(page) : undefined,
-    })
+    if (page) {
+      const suspenseConfigs = extractSuspenseConfigs(page)
+      debug.suspenseConfigs = suspenseConfigs.map(c => c.pageConfigId)
+
+      for (const { pageConfigId, params } of suspenseConfigs) {
+        const query = Object.entries(params || {}).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&')
+        const path = `/pages/${pageConfigId}${query ? `?${query}` : ''}`
+        const data = await fetchDirect(authToken, path)
+        const recipes = extractRecipes(data)
+        if (recipes.length > 0) return res.status(200).json({ recipes, _source: `suspense:${pageConfigId}` })
+        if (data) debug[`suspense:${pageConfigId}`] = JSON.stringify(data).slice(0, 150)
+      }
+    }
+
+    return res.status(200).json({ recipes: [], _debug: debug })
   } catch (err) {
     const tokenExpired = /403|401|Unauthorized|Forbidden/i.test(err.message)
     res.status(tokenExpired ? 401 : 500).json({ error: err.message, tokenExpired })
