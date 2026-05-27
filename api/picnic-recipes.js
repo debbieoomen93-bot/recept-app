@@ -127,22 +127,26 @@ function debugStructure(page) {
     return out
   }
   try {
-    // Navigate: layout.body → 3x child (STATE_BOUNDARY chain) → children[0] (campaign-page-layout) → children (sections)
     const body = page?.layout?.body
     const container = body?.child?.child?.child
     const campaignLayout = container?.children?.[0]
     const sections = (campaignLayout?.children || []).filter(
       c => c && typeof c === 'object' && c.type === 'BLOCK' && Array.isArray(c.children)
     )
+    // Navigate: section → children[1] (STATE_BOUNDARY) → child → children[0]
+    const section0 = sections[0]
+    const sectionStateBoundary = section0?.children?.[1]
+    const sectionBlock = sectionStateBoundary?.child
+    const innerBlock = sectionBlock?.children?.[0]
     const result = {
       sectionCount: sections.length,
-      firstSectionId: sections[0]?.id,
-      firstSectionChildCount: sections[0]?.children?.length,
-      firstSectionFirstChild: trim(sections[0]?.children?.[0], 7),
-      firstSectionSecondChild: trim(sections[0]?.children?.[1], 4),
+      innerBlockId: innerBlock?.id,
+      innerBlockType: innerBlock?.type,
+      innerBlockChildCount: innerBlock?.children?.length ?? innerBlock?.child ? 1 : 0,
+      innerBlockFirstChild: trim(innerBlock?.children?.[0] ?? innerBlock?.child, 8),
     }
     const str = JSON.stringify(result, null, 1)
-    return str.length > 5000 ? str.slice(0, 5000) + '…' : str
+    return str.length > 6000 ? str.slice(0, 6000) + '…' : str
   } catch (e) { return `(fout: ${e.message})` }
 }
 
