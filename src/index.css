@@ -83,6 +83,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   box-shadow: 0 2px 8px rgba(61,138,95,0.25);
 }
 .btn-ai-generate:active { opacity: 0.88; }
+.search-mode-btn {
+  flex: 1; padding: 11px 10px; border: 1.5px solid var(--green-pastel);
+  border-radius: 10px; font-size: 14px; font-weight: 600;
+  cursor: pointer; background: white; color: #555;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.search-mode-btn:disabled { opacity: 0.45; cursor: default; }
+.search-mode-btn--active { background: var(--green); color: white; border-color: var(--green); }
+.search-mode-btn--ai.search-mode-btn--active { background: linear-gradient(135deg, #4a9e72, #3d8a5f); border-color: #3d8a5f; }
 .share-toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #1a1a1a; color: white; padding: 10px 20px; border-radius: 20px; font-size: 14px; z-index: 999; white-space: nowrap; }
 
 /* Cards */

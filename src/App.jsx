@@ -56,7 +56,7 @@ export default function App() {
           <Route path="/recepten/:id/bewerken" element={<RecipeForm username={username} />} />
           <Route path="/planning" element={<WeekPlanning />} />
           <Route path="/boodschappen" element={<ShoppingList />} />
-          <Route path="/picnic" element={<PicnicRecipes />} />
+          <Route path="/picnic" element={<PicnicRecipes username={username} />} />
           <Route path="/picnic/ai" element={<AIRecipe username={username} />} />
           <Route path="/picnic/db/:mealId" element={<PicnicRecipeDetail username={username} />} />
           <Route path="*" element={<Navigate to="/recepten" replace />} />
